@@ -21,7 +21,7 @@ class WPSupportToSlack {
         register_activation_hook(__FILE__, array($this, 'support_slack_cron_activate'));
         register_deactivation_hook(__FILE__, array($this, 'support_slack_cron_deactivate'));
         add_filter('cron_schedules', array($this, 'support_slack_cron_update_schedules'));
-        add_action('support_slack_cron_event', array($this, 'support_slack_cron_fct'));
+        add_action('support_slack_cron_event', array($this, 'send_slack_notification'));
         add_action( 'admin_init',  array($this, 'wp_support_slack_register_setting'));
         add_action( 'admin_menu', array($this, 'support_to_slack_settings_menu'));
     }
@@ -180,7 +180,7 @@ class WPSupportToSlack {
      *
      * @return void
      */
-    public function support_slack_cron_fct() 
+    public function send_slack_notification() 
     {
         // get support feed data
         $plugin_feed = get_option('plugin_feed');
