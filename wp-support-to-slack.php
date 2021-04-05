@@ -37,10 +37,26 @@ class WPSupportToSlack {
         $feedbook = new FeedBook();
         add_action("admin_init", [$feedbook, 'form_handler']);
         add_action('admin_post_wp_support_to_slack_page-delete-cron', [$feedbook, 'delete_address']);
-		add_action( 'init', array($this,'cron_save_org_downloads') );
+		add_action( 'cron_save_org_downloads', array($this,'cron_save_org_downloads') );
 		add_action( 'admin_menu', array($this,'FeedMenu') );
 		add_action( 'admin_init',  array($this, 'field_register_setting'));
+		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
     }
+
+	public function admin_notices() {
+		if ( ! empty( $_GET['feed-updated'] ) ) {
+			echo '<div class="notice notice-success is-dismissible"><p>'.esc_html__( "Feed Updated", "support-to-slack").'</p></div>';
+		}
+		
+		if ( ! empty( $_GET['cron-deleted'] ) ) {
+			echo '<div class="notice notice-success is-dismissible"><p>'.esc_html__( "Feed deleted successfully!", "support-to-slack").'</p></div>';
+		}
+		
+		if ( ! empty( $_GET['inserted'] ) ) {
+			echo '<div class="notice notice-success is-dismissible"><p>'.esc_html__( "Plugin Feed has been added successfully!", "support-to-slack").'</p></div>';
+		}
+		
+	   }
 
 	public function FeedMenu() {
         add_menu_page(
@@ -268,7 +284,7 @@ class WPSupportToSlack {
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
 
-        $schema = "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}_pluginfeeds` ( `id` INT(11) NOT NULL AUTO_INCREMENT , `slack_webhook` VARCHAR(255) NULL , `plugin_feed_url` VARCHAR(255) NULL, `plugin_name` VARCHAR(255) NULL, `minutewise` INT(11) NULL, `hourly` INT(11) NULL, `daywise` INT(11) NULL, `weekly` INT(11) NULL, `custom_message` VARCHAR(255) NULL, `enable_rating` INT(11) NULL, `download_count` INT(11) NULL, `created_by` BIGINT(20) NOT NULL , `created_at` DATETIME NOT NULL , PRIMARY KEY (`id`)) $charset_collate";
+        $schema = "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}_pluginfeeds` ( `id` INT(11) NOT NULL AUTO_INCREMENT , `slack_webhook` VARCHAR(255) NULL , `plugin_feed_url` VARCHAR(255) NULL, `plugin_theme` VARCHAR(255) NULL, `plugin_name` VARCHAR(255) NULL, `custom_message` VARCHAR(255) NULL, `created_by` BIGINT(20) NOT NULL , `created_at` DATETIME NOT NULL , PRIMARY KEY (`id`)) $charset_collate";
 
         if (!function_exists('dbDelta')) {
             require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -316,6 +332,7 @@ class WPSupportToSlack {
                 break;
             case "edit":
                 $feed_info  = wpslack_get_plugin_info($id);
+				
                 $template = __DIR__ . "/includes/feed-edit.php";
                 break;
             case "view":
@@ -351,7 +368,7 @@ class WPSupportToSlack {
 		$daywise = get_option('daywise');
 		$weekly = get_option('weekly');
 		$monthly = get_option('monthly');
-		
+		//write_log($result);
         
 		foreach ($result as $key => $plugin_info) {
 			if(!empty($minutewise) && $minutewise > 0 && !wp_next_scheduled( 'TestCron_cron_event_'.$plugin_info->plugin_feed_url.'' )){
@@ -437,6 +454,7 @@ class WPSupportToSlack {
 		if(!empty($download_count) && $download_count >= 1){
 			$schedules['daily'] = array('interval' => 60,  'display' => 'Once in a day');
 		}
+		// write_log($schedules);
         return $schedules;
     }
 
@@ -459,7 +477,7 @@ class WPSupportToSlack {
         $plugin_feed = 'https://wordpress.org/support/plugin/'.$plugin_feed_url.'/feed';
         //$hook_url = $plugin_info->slack_webhook;
         $custom_message = !empty($custom_message) ? $custom_message : "new support ticket from " . $plugin_name;
-        
+        //write_log($plugin_name);
         /**
          * Checking plugin feed and hook url is not empty
          */
@@ -475,8 +493,10 @@ class WPSupportToSlack {
             }
             $objJsonDocument = json_encode($objXmlDocument);
             $arrOutput = json_decode($objJsonDocument, true);
+			//write_log($arrOutput['channel']['item']);
 			if(key_exists('item', $arrOutput['channel']) && $objXmlDocument == true){
 				$support_item = $arrOutput['channel']['item'];
+				$total_support_thread = count($support_item);
 				$new_seq = array();
 				// Creating new array based on format of slack sending message data
 				foreach ($support_item as $key => $value) {
@@ -489,7 +509,23 @@ class WPSupportToSlack {
 						$new_seq[] = $sec_array;
 					}
 				}
+
+				/* update_option('number_of_support', $total_support_thread);
+				$prev_support_num = get_option('number_of_support');
+				//write_log($prev_support_num);
+				$new_support = array_splice($support_item, -29);
+
+				foreach ($support_item as $key => $value) {
+					$sec_array = array();
+					$sec_array['type'] = 'section';
+					$sec_array['text']['type'] = 'mrkdwn';
+					$sec_array['text']['text'] =  ++$key .'. '. strip_tags($value['title']) . '<' . $value['link'] .' | Click here>'. ' From '. $plugin_name;
+					$new_seq[] = $sec_array;
+				} */
+
             // checking is new array is empty or not
+			//write_log($new_seq);
+				
 				if (!empty($new_seq)) {
 					$message = array('payload' => json_encode(array(
 					'text' => $custom_message,
@@ -523,7 +559,7 @@ class WPSupportToSlack {
 			$arrOutputReview = json_decode($objJsonreview, TRUE);
 			$reviews_item = $arrOutputReview['channel']['item'];
 			$yesterday_rating = !empty(get_option('total_rating'))? get_option('total_rating') : count($reviews_item);
-  			array_splice($reviews_item, count($reviews_item) - $yesterday_rating, $yesterday_rating);
+  			array_splice($reviews_item, -29);
 			//print_r($arrOutputReview['channel']['item']);
 			$rating_arr = array();
 			foreach($reviews_item  as $key => $value){
@@ -554,13 +590,12 @@ class WPSupportToSlack {
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				$result = curl_exec($ch);
 				curl_close($ch);
-				//return $result;
 			}
 		}
         //}
     }
 
-	function js_get_plugin_downloads($plugin_slug) {
+	public function get_plugin_downloads($plugin_slug) {
 
 		$url 		= 'https://api.wordpress.org/plugins/info/1.0/';
 		$response 	= wp_remote_post( $url, array(
@@ -593,49 +628,50 @@ class WPSupportToSlack {
 	}
 	public function cron_save_org_downloads() {
 		$plugin_list = array();
-		foreach ($this->get_plugin_info() as $key => $value) {
-			$plugin_list[$value->plugin_feed_url] = $this->js_get_plugin_downloads(($value->plugin_feed_url));
-		}
-		$downloaded =  get_option( 'total_downloaded' );
-		//write_log($downloaded);
-		$download_count = get_option('enable_download_count');
-		$count_report_hook = get_option('download_count_hook');
-		$new_seq = array();
-		$i = 0;
-
-		$subtracted = array_map(function ($x, $y) { return $y-$x; } , $plugin_list, $downloaded);
-		$result     = array_combine(array_keys($plugin_list), $subtracted);
-		write_log($result);
-		foreach($result as $single_key => $single_d){
-			require_once( ABSPATH . 'wp-admin/includes/plugin-install.php' );
-			$plugin_info = plugins_api( 'plugin_information', array( 'slug' => $single_key ) );
-			$plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
-			$sec_array = array();
-            $sec_array['type'] = 'section';
-            $sec_array['text']['type'] = 'mrkdwn';
-            $sec_array['text']['text'] = $plugin_name . ' todays download '.$single_d.'';
-            $new_seq[] = $sec_array;
-			$i++;
-		}
-
-		if(!empty($count_report_hook) && !empty($download_count) && $download_count >= 1){
+		if(!empty($plugin_list)){
+			foreach ($this->get_plugin_info() as $key => $value) {
+				$plugin_list[$value->plugin_feed_url] = $this->get_plugin_downloads(($value->plugin_feed_url));
+			}
+			$downloaded =  get_option( 'total_downloaded' );
 			//write_log($downloaded);
-			$message = array('payload' => json_encode(array(
-			'text' => 'yesterday plugin\'s download report',
-			"blocks" =>
-					$new_seq
-				)));
-			// Use curl to send your message
-			$ch = curl_init($count_report_hook);
-			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $message);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			$result = curl_exec($ch);
-			curl_close($ch);
+			$download_count = get_option('enable_download_count');
+			$count_report_hook = get_option('download_count_hook');
+			$new_seq = array();
+			$i = 0;
+
+			$subtracted = array_map(function ($x, $y) { return $y-$x; } , $plugin_list, $downloaded);
+			$result     = array_combine(array_keys($plugin_list), $subtracted);
+			//write_log($result);
+			foreach($result as $single_key => $single_d){
+				require_once( ABSPATH . 'wp-admin/includes/plugin-install.php' );
+				$plugin_info = plugins_api( 'plugin_information', array( 'slug' => $single_key ) );
+				$plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
+				$sec_array = array();
+				$sec_array['type'] = 'section';
+				$sec_array['text']['type'] = 'mrkdwn';
+				$sec_array['text']['text'] = $plugin_name . ' todays download '.$single_d.'';
+				$new_seq[] = $sec_array;
+				$i++;
+			}
+
+			if(!empty($count_report_hook) && !empty($download_count) && $download_count >= 1){
+				//write_log($downloaded);
+				$message = array('payload' => json_encode(array(
+				'text' => 'yesterday plugin\'s download report',
+				"blocks" =>
+						$new_seq
+					)));
+				// Use curl to send your message
+				$ch = curl_init($count_report_hook);
+				curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $message);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				$result = curl_exec($ch);
+				curl_close($ch);
+			}
+			//write_log($plugin_list);
+			update_option( 'total_downloaded', $plugin_list );
 		}
-		
-		//write_log($plugin_list);
-		update_option( 'total_downloaded', $plugin_list );
 	}
 }
 

@@ -48,6 +48,12 @@ function wpslack_delete_feed($id)
 {
     global $wpdb;
 
+    $plugins = wpslack_get_plugin_info($id);
+    //write_log($plugins);
+    if(is_object($plugins)){
+        wp_clear_scheduled_hook($plugins->plugin_feed_url);
+    }
+
     return $wpdb->delete(
         $wpdb->prefix . '_pluginfeeds',
         ['id' => $id],

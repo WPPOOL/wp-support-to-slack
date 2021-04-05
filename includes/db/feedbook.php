@@ -22,36 +22,56 @@ class FeedBook
         $id      = isset($_POST['id']) ? intval($_POST['id']) : 0;
         $slack_webhook    = isset($_POST['slack_webhook']) ? sanitize_text_field($_POST['slack_webhook']) : '';
         $plugin_feed_url = isset($_POST['plugin_feed_url']) ? sanitize_textarea_field($_POST['plugin_feed_url']) : '';
-        $minutewise   = isset($_POST['minutewise']) ? sanitize_text_field($_POST['minutewise']) : '';
-        $hourly   = isset($_POST['hourly']) ? sanitize_text_field($_POST['hourly']) : '';
-        $daywise   = isset($_POST['daywise']) ? sanitize_text_field($_POST['daywise']) : '';
-        $weekly   = isset($_POST['weekly']) ? sanitize_text_field($_POST['weekly']) : '';
+        $theme_or_plugin = isset($_POST['theme_or_plugin']) ? sanitize_textarea_field($_POST['theme_or_plugin']) : '';
         $custom_message   = isset($_POST['custom_slack_message']) ? sanitize_text_field($_POST['custom_slack_message']) : '';
-        $enable_rating   = isset($_POST['enable_rating']) ? sanitize_text_field($_POST['enable_rating']) : 0;
-        $download_count   = isset($_POST['download_count']) ? sanitize_text_field($_POST['download_count']) : 0;
         require_once( ABSPATH . 'wp-admin/includes/plugin-install.php' );
         $plugin_info = plugins_api( 'plugin_information', array( 'slug' => $plugin_feed_url ) );
         $plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
+
         if (!empty($this->errors)) {
             return;
         }
+
         $insert_id = $this->wp_support_slack_insert_address([
             'slack_webhook'    => $slack_webhook,
             'plugin_feed_url' => $plugin_feed_url,
+            'plugin_theme' => $theme_or_plugin,
             'plugin_name'   => $plugin_name,
-            'minutewise'   => $minutewise,
-            'hourly'   => $hourly,
-            'daywise'   => $daywise,
-            'weekly'   => $weekly,
-            'custom_message'   => $custom_message,
-            'enable_rating'   => $enable_rating,
-            'download_count'   => $download_count
+            'custom_message'   => $custom_message
         ]);
         
         if (is_wp_error($insert_id)) {
             wp_die($insert_id->get_error_message());
         }
+        if($id || $insert_id){
 
+            $minutewise = get_option('minutewise');
+            $hourly = get_option('hourly');
+            $daywise = get_option('daywise');
+            $weekly = get_option('weekly');
+            $monthly = get_option('monthly');
+
+            $cron_int_list = array(
+                'minutewise' => $minutewise,
+                'hourly' => $hourly,
+                'daywise' => $daywise,
+                'weekly' => $weekly,
+                'monthly' => $monthly,
+            );
+
+            foreach ($cron_int_list as $cron_key => $cron_value) {
+
+                if(!empty($cron_value) && $cron_value > 0 && !wp_next_scheduled( 'TestCron_cron_event_'.$plugin_feed_url .'' )){
+                    wp_schedule_event(time(), $cron_key, 'TestCron_cron_event_'.$plugin_feed_url.'', array(
+                        'plugin_feed_url' => $plugin_feed_url,
+                        'slack_webhook' => $slack_webhook,
+                        'plugin_name' => $plugin_name,
+                        'custom_message' => $custom_message,
+                    ));
+                }
+            }
+
+        }
         if ($id) {
             $redirected_to = admin_url('admin.php?page=wp_support_to_slack_page&action=edit&feed-updated=true&id=' . $id);
         } else {
@@ -66,7 +86,6 @@ class FeedBook
         if (!empty($this->errors)) {
             return;
         }
-
 
         if (is_wp_error($insert_id)) {
             wp_die($insert_id->get_error_message());
@@ -97,24 +116,21 @@ class FeedBook
         exit;
     }
 
+    /**
+     * Undocumented function
+     *
+     * @param array $args
+     * @return void
+     */
     public function wp_support_slack_insert_address($args = []) {
         global $wpdb;
         $id      = isset($_POST['id']) ? intval($_POST['id']) : 0;
 
-        /* if (empty($args['slack_webhook'])) {
-            return new \WP_Error('no-name', __('You must provide a name.', 'support-to-slack'));
-        } */
-
         $defaults = [
             'slack_webhook'       => '',
             'plugin_feed_url'       => '',
-            'minutewise'   => '',
-            'hourly'   => '',
-            'daywise'   => '',
-            'weekly'   => '',
             'custom_message'   => '',
-            'enable_rating'   => '',
-            'download_count'   => '',
+            'plugin_theme'   => '',
             'created_by' => get_current_user_id(),
             'created_at' => current_time('mysql'),
         ];
@@ -136,7 +152,7 @@ class FeedBook
         }
 
         if (!$inserted) {
-            return new \WP_Error('failed-to-insert', __('Failed to insert data', 'wp-standard'));
+            return new \WP_Error('failed-to-insert', __('Failed to insert data', 'support-to-slack'));
         }
 
         return $wpdb->insert_id;
@@ -203,4 +219,5 @@ class FeedBook
 		<?php
 		$this->display_tablenav( 'bottom' );
 	}
+
 }
