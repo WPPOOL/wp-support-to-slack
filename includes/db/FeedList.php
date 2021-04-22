@@ -38,7 +38,7 @@ class FeedList extends \WP_List_Table
         return [
             'cb'         => '<input type="checkbox" />',
             'name'       => __('Plugin Name', 'support-to-slack'),
-            'cron_interval'    => __('Cron Interval', 'support-to-slack'),
+            'plugin_theme'    => __('Plugin / Theme', 'support-to-slack'),
             'created_at' => __('Date', 'support-to-slack'),
         ];
     }

@@ -25,7 +25,13 @@ class FeedBook
         $theme_or_plugin = isset($_POST['theme_or_plugin']) ? sanitize_textarea_field($_POST['theme_or_plugin']) : '';
         $custom_message   = isset($_POST['custom_slack_message']) ? sanitize_text_field($_POST['custom_slack_message']) : '';
         require_once( ABSPATH . 'wp-admin/includes/plugin-install.php' );
-        $plugin_info = plugins_api( 'plugin_information', array( 'slug' => $plugin_feed_url ) );
+
+        if($theme_or_plugin == 'theme'){
+            $plugin_info = themes_api( 'theme_information', array( 'slug' => $plugin_feed_url ) );
+        }elseif($theme_or_plugin == 'plugin'){
+            $plugin_info = plugins_api( 'plugin_information', array( 'slug' => $plugin_feed_url ) );
+        }
+
         $plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
 
         if (!empty($this->errors)) {
@@ -59,12 +65,19 @@ class FeedBook
                 'monthly' => $monthly,
             );
 
+            $plugins = wpslack_get_plugin_info($id);
+            //write_log($plugins);
+            if(is_object($plugins)){
+                wp_clear_scheduled_hook($plugins->plugin_feed_url);
+            }
+
             foreach ($cron_int_list as $cron_key => $cron_value) {
 
                 if(!empty($cron_value) && $cron_value > 0 && !wp_next_scheduled( 'TestCron_cron_event_'.$plugin_feed_url .'' )){
                     wp_schedule_event(time(), $cron_key, 'TestCron_cron_event_'.$plugin_feed_url.'', array(
                         'plugin_feed_url' => $plugin_feed_url,
                         'slack_webhook' => $slack_webhook,
+                        'plugin_or_theme' => $theme_or_plugin,
                         'plugin_name' => $plugin_name,
                         'custom_message' => $custom_message,
                     ));
@@ -137,8 +150,6 @@ class FeedBook
 
         $data = wp_parse_args($args, $defaults);
         if (!empty($id) && $id > 0) {
-            //write_log($_POST);
-            //die();
             $inserted = $wpdb->update(
                 $wpdb->prefix . '_pluginfeeds',
                 $data,
