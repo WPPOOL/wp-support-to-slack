@@ -20,7 +20,7 @@
             if (is_array($feeds) && sizeof($feeds) > 0) {
                 $exceptions = isset($feeds['plugin_theme_feed']) ? $feeds['plugin_theme_feed'] : array();
             }
-            //write_log($dayexception);
+            //write_log($feeds);
 
             $feed_list = get_option( 'theme_plugin_list');
             if( isset($feed_list['plugin_theme_feed']['feed'])){
@@ -38,11 +38,16 @@
                 foreach ($feeds['feed'] as $key => $single_feed) {
                     if (!empty($interval) && !empty($recurrence) && !wp_next_scheduled('support_to_slack_event_'.$key.'')) {
                         $slug = basename($single_feed['org_link']);
+                        //write_log($single_feed);
+                        $global_hook = get_option('slack_support_settings');
+                        $hook_type = isset( $single_feed['global_hook'] ) && $single_feed['global_hook'] == 'on' ? $global_hook['download_webhook'] : $single_feed['webhook'];
+                        //write_log($hook_type);
+                        
                         $plugin_info = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
                         $plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
                         wp_schedule_event(time(), $recurrence, 'support_to_slack_event_'.$key.'', array(
                             'plugin_feed_url' => $slug,
-                            'slack_webhook' => $single_feed['webhook'],
+                            'slack_webhook' => $hook_type,
                             'plugin_name' => $plugin_name,
                             'custom_message' => $single_feed['message'],
                         ));
@@ -73,11 +78,15 @@
                     //write_log($recurrence);
                     if (!empty($interval) && !empty($recurrence) && !wp_next_scheduled('support_to_slack_event_'.$key.'')) {
                         $slug = basename($single_feed['org_link']);
+
+                        $global_hook = get_option('slack_support_settings');
+                        $hook_type = isset( $single_feed['global_hook'] ) && $single_feed['global_hook'] == 'on' ? $global_hook['download_webhook'] : $single_feed['webhook'];
+
                         $plugin_info = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
                         $plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
                         wp_schedule_event(time(), $recurrence, 'support_to_slack_event_'.$key.'', array(
                             'plugin_feed_url' => $slug,
-                            'slack_webhook' => $single_feed['webhook'],
+                            'slack_webhook' => $hook_type,
                             'plugin_name' => $plugin_name,
                             'custom_message' => $single_feed['message'],
                         ));
@@ -85,7 +94,7 @@
                 }
             }
         
-            if (! wp_next_scheduled('cron_save_org_downloads')) :
+            if ( $cron_settings['enable_download_count'] == 'on' && !empty( $cron_settings['download_webhook'] ) && !wp_next_scheduled('cron_save_org_downloads')) :
                 wp_schedule_event(time(), 'minute_count', 'cron_save_org_downloads'); // 1407110400 is 08 / 4 / 2014 @ 0:0:0 UTC
             endif;
         }
@@ -106,6 +115,7 @@
             } elseif ($plugin_or_theme == 'plugin') {
                 
             } */
+            //write_log($plugin_name);
 
             libxml_use_internal_errors(true);
             $plugin_feed = 'https://wordpress.org/support/plugin/'.$plugin_feed_url.'/feed';
@@ -133,7 +143,7 @@
                     $new_seq = array();
                     // Creating new array based on format of slack sending message data
                     $new_array = array();
-                    $saved_list = get_option('saved_thread');
+                    $saved_list = !empty(get_option('saved_thread')) ? get_option('saved_thread') : array();
                     //write_log($plugin_name);
                     foreach ($support_item as $key => $value) {
                         
@@ -219,35 +229,7 @@
                 $objJsonreview = json_encode($review_document);
                 $arrOutputReview = json_decode($objJsonreview, true);
                 if(array_key_exists('item', $arrOutputReview['channel']) && is_array($arrOutputReview['channel']['item']) && !empty($arrOutputReview['channel']['item'])){
-                    /* $reviews_item = array(
-                        array(
-                            'guid' => 'https://wordpress.org/support/topic/i-like-it-847/',
-                            'title'    => 'I Like it! (4 stars)',
-                            'link' => 'https://wordpress.org/support/topic/i-like-it-847/',
-                            'pubDate' => 'Tue, 29 Apr 2026 23:59:19 +0000',
-                            'description' => '<p>Replies: 1</p>
-                                                <p>Rating: 4 stars</p>
-                            <p>It makes my site look great for evening viewing.</p>'
-                        ),
-                        array(
-                            'guid' => 'https://wordpress.org/support/topic/i-like-it-2/',
-                            'title'    => 'I Like it 2! (4 stars)',
-                            'link' => 'https://wordpress.org/support/topic/i-like-it-2/',
-                            'pubDate' => 'Sat, 10 Apr 4056 17:11:00 +0000',
-                            'description' => '<p>Replies: 1</p>
-                                                <p>Rating: 4 stars</p>
-                            <p>It makes my site look great for evening viewing.</p>'
-                        ),
-                        array(
-                            'guid' => 'https://wordpress.org/support/topic/i-like-it-3/',
-                            'title'    => 'I Like it 3! (4 stars)',
-                            'link' => 'https://wordpress.org/support/topic/i-like-it-3/',
-                            'pubDate' => 'Sun, 04 Apr 3055 13:20:01 +0000',
-                            'description' => '<p>Replies: 1</p>
-                                                <p>Rating: 4 stars</p>
-                            <p>It makes my site look great for evening viewing.</p>'
-                        )
-                    ); */
+
                     $reviews_item = $arrOutputReview['channel']['item'];
                     //write_log(count($reviews_item));
                     $yesterday_rating = !empty(get_option('total_rating'))? get_option('total_rating') : count($reviews_item);
@@ -255,10 +237,10 @@
                     $rating_arr = array();
                     
                     $rating_list = array();
-                    $saved_rating = get_option('saved_rating');
+                    $saved_rating = !empty(get_option('saved_rating')) ? get_option('saved_rating') : array();
                     //write_log($reviews_item);
                     
-                    //write_log($reviews_item);
+                    //write_log(get_option($plugin_feed_url));
                     foreach ($reviews_item  as $key => $value) {
                         $str = $value['description'];
                         if (preg_match_all('/Rating:(.*?)star/', $str, $match)) {
@@ -268,21 +250,24 @@
                                     break;
                                 }
                                 $rating_list[] = strtotime($value['pubDate']);
-                                $first_install = get_option('first_install');
+                                $first_install = get_option($plugin_feed_url);
                                 /* if(!isset($first_install)){
-                                    continue;
+                                    break;
                                 } */
                                 echo '<p>hello you got another '.str_repeat(":star:", floatval($match[1][0])) .' star review. Details: '. $value['link'];
                                 $sec_array = array();
                                 $sec_array['type'] = 'section';
                                 $sec_array['text']['type'] = 'mrkdwn';
                                 $sec_array['text']['text'] =  ++$key .'. '. 'Hello you got another '.str_repeat(":star:", floatval($match[1][0])) .' star review. '.$plugin_name.': '. $value['link'];
-                                $rating_arr[] = $sec_array;
+                                
+                                if(!empty($first_install)){
+                                    $rating_arr[] = $sec_array;
+                                }
                             }
                         }
                     }
                     //write_log($rating_arr);
-                    update_option('first_install', 111);
+                    update_option( $plugin_feed_url, 111);
                     $rating_list = array_merge($rating_list, $saved_rating);
                     $rating_list = array_unique($rating_list);
                     update_option('saved_rating', $rating_list);
@@ -343,30 +328,27 @@
 
             $plugin_info = plugins_api('plugin_information', array( 'slug' => 'wp-dark-mode' ));
             //write_log($plugin_info);
+            $downloaded =  get_option('total_downloaded');
+            //write_log($downloaded);
+            $download_count = get_option('enable_download_count');
+            $count_report_hook = get_option('slack_support_settings');
+            // write_log($downloaded);
 
 
             $plugin_list = array();
             $feed_list = get_option( 'theme_plugin_list');
-            write_log($feed_list);
-            // if (empty($plugin_list)) {
+            //write_log($feed_list);
+            if ($count_report_hook['enable_download_count'] == 'on') {
                 foreach ($feed_list['plugin_theme_feed']['feed'] as $key => $value) {
                     //write_log($value);
                     $slug = basename($value['org_link']);
                     $plugin_list[$slug] = self::get_plugin_downloads($slug);
                 }
-                $downloaded =  get_option('total_downloaded');
 
-                $download_count = get_option('enable_download_count');
-                $count_report_hook = get_option('slack_support_settings');
                 $new_seq = array();
                 $i = 0;
-                /* $plugin_list = array(
-                    'webinar-and-video-conference-with-jitsi-meet' => '242952',
-                    'wp-dark-mode' => '6723136',
-                    'appointment-hour-booking' => '69010443'
-                ); */
 
-                //write_log($count_report_hook);
+                //write_log($plugin_list);
                 $subtracted = array_map(function ($x, $y) {
                     return $x - $y;
                 }, $plugin_list, $downloaded);
@@ -402,6 +384,6 @@
                     curl_close($ch);
                 }
                 update_option('total_downloaded', $plugin_list);
-            // }
+            }
         }
     }//end class WP Support To Slack

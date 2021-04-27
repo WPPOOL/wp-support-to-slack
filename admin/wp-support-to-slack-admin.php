@@ -62,15 +62,18 @@
             //add_action('init', 'WP_To_Slack_Helper::support_slack_cron_activate');
 
             $feed_list = get_option( 'theme_plugin_list');
-            if(!empty($feed_list['plugin_theme_feed'])) {
+            if(!empty($feed_list['plugin_theme_feed']) && array_key_exists('feed', $feed_list['plugin_theme_feed'])) {
                 foreach ($feed_list['plugin_theme_feed']['feed'] as $key => $value) {
                     add_action('support_to_slack_event_'.$key.'', 'WP_To_Slack_Helper::support_to_slack_msg_request', 10, 4);
                 }
             }
-            add_action( 'cron_save_org_downloads', 'WP_To_Slack_Helper::org_daily_download_count' );
+            $notification_settings = get_option('slack_support_settings');
+            if($notification_settings['enable_download_count'] == 'on'){
+                add_action( 'cron_save_org_downloads', 'WP_To_Slack_Helper::org_daily_download_count' );
+            }
 
-            add_action('wp_ajax_fetch_wordpress_plugin', array( $this, 'fetch_wordpress_plugin'));
-            add_action('wp_ajax_nopriv_fetch_wordpress_plugin', array( $this, 'fetch_wordpress_plugin'));
+            /* add_action('wp_ajax_fetch_wordpress_plugin', array( $this, 'fetch_wordpress_plugin'));
+            add_action('wp_ajax_nopriv_fetch_wordpress_plugin', array( $this, 'fetch_wordpress_plugin')); */
         }
 
         public function settings_init()
@@ -178,7 +181,7 @@
         {
             $setting = $this->setting;
             echo support_to_slack_get_template_html('admin/setting.php', array( 'ref' => $this, 'setting' => $setting ));
-        }// end of CBXBusinessHours_options_page_data method
+        }// end of wp_slack_support_options_page_data method
 
         public function get_settings_sections()
         {
@@ -217,6 +220,7 @@
                         'name'    => 'enable_rating',
                         'label'   => esc_html__('Enable Plugin/Theme Rating Notification', 'support-to-slack'),
                         'type'    => 'checkbox',
+                        'default' => 'on'
                     ),
                     array(
                         'name'    => 'enable_download_count',
@@ -260,12 +264,12 @@
 
             foreach ($sections as $section) {
                 $settings_fields[ $section['id'] ] = apply_filters(
-                    'cbxbusinesshours_global_' . $section['id'] . '_fields',
+                    'wp_slack_support_global_' . $section['id'] . '_fields',
                     $settings_builtin_fields[ $section['id'] ]
                 );
             }
 
-            $settings_fields = apply_filters('cbxbusinesshours_global_fields', $settings_fields); //final filter if need
+            $settings_fields = apply_filters('wp_slack_support_global_fields', $settings_fields); //final filter if need
 
             return $settings_fields;
         }//end get_settings_field
@@ -292,11 +296,11 @@
         public function fetch_wordpress_plugin() {
             // Grab php file output from server
             ob_start();
-            include('file:///C:/xampp/htdocs/WPSupport_slack/wp-content/plugins/wp-support-to-slack/templates/admin/sidebar.php');
+            include('file:///C:/xampp/htdocs/slack_test/wp-content/plugins/wp-support-to-slack/templates/admin/sidebar.php');
             $result = ob_get_contents();
             ob_end_clean();
             $return = array('content' => $result);
             wp_send_json($return);
             wp_die();
         }
-    }//end class CbxBusinessHours_Admin
+    }//end class WP_Support_Slack_Admin

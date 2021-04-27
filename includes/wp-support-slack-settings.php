@@ -12,7 +12,6 @@
 	 * @author Tareq Hasan <tareq@weDevs.com>
 	 * @link http://tareq.weDevs.com Tareq's Planet
 	 * @example src/settings-api.php How to use the class
-	 * Further modified by codeboxr.com team
 	 */
 	if (!class_exists('WP_To_Slack_Settings')):
 
@@ -593,18 +592,9 @@
 				if ( ! is_array( $dayexception ) ) {
 					$dayexception = array();
 				}
-                //write_log($_POST);
-
 
 				$unique_last_count = isset( $dayexception['unique_last_count'] ) ? intval( $dayexception['unique_last_count'] ) : 0;
 				$exceptions    = isset( $dayexception['feed'] ) ? $dayexception['feed'] : array();
-				//write_log($dayexception);
-
-				/* $url = "http://sitename.com/category/best-post";*/
-				//$parts = explode("/", $org_link);
-				//echo $parts[count($parts) - 1]; // best-post 
-				//write_log($parts[count($parts) - 1]);
-
 
 				?>
 				<div class="dayexception_wrapper">
@@ -617,7 +607,13 @@
 									$slug = basename($exception['org_link']);
 									$plugin_info = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 									$plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
-									
+									//write_log($exception);
+									if(isset($exception['global_hook']) && $exception['global_hook'] == "on"){
+										$checked = "checked";
+									}else{
+										$checked = "";
+									}
+									$disabled = isset($exception['global_hook']) && $exception['global_hook'] == "on" ? 'disabled' : "";
 									?>
 									<div class="dayexception_item">
                                         <div class="accordion_tab">
@@ -631,8 +627,12 @@
                                         <div class="feed_item_label">
                                             <label for="slack_webhook'+'_<?php echo $key ?>"><?php esc_html_e('Slack Webhook', ''); ?></label>
                                         </div>
+										<!-- <label for="use_global_webhook" class="use_global_webhook_label"></label> -->
+										<span class="use_global_webhook_label"><?php esc_html_e('Use Global Slack Webhook Instead', 'support-to-slack') ?></span>
+										<input type="checkbox" name="<?php echo $args['section'] ?>[<?php echo $args['id'] ?>][feed][<?php echo esc_attr( $key ); ?>][global_hook]" class="use_global_webhook" id="use_global_webhook" value="on" <?php echo $checked ?>/>
+										<!-- <div><span></span></div> -->
                                         <div class="feed_item_field">
-                                            <input type="text" class="" placeholder="<?php esc_html_e('Webhook', 'support-to-slack'); ?>" name="<?php echo $args['section'] ?>[<?php echo $args['id'] ?>][feed][<?php echo esc_attr( $key ); ?>][webhook]" value="<?php echo esc_attr( $exception['webhook'] ) ?>" />
+                                            <input type="text" class="support_slack_webhook" placeholder="<?php esc_html_e('Webhook', 'support-to-slack'); ?>" name="<?php echo $args['section'] ?>[<?php echo $args['id'] ?>][feed][<?php echo esc_attr( $key ); ?>][webhook]" value="<?php echo isset($exception['webhook']) ? esc_attr( $exception['webhook'] ) : '' ?>" <?php echo $disabled; ?> />
                                         </div>
                                     </div>
 
@@ -669,7 +669,7 @@
 					<br/>
 					<a class="add_exception button" data-name="<?php echo $args['id'] ?>" data-section="<?php echo $args['section'] ?>">
 						<span class="dashicons dashicons-plus-alt" style="margin-top: 5px;color: #2cff1e;"></span>
-						<?php echo esc_html__( 'Add New', 'cbx_opening_hours' ); ?>
+						<?php echo esc_html__( 'Add New', 'support-to-slack' ); ?>
 					</a>
 					<a class="removeall_exception button"><?php echo '<span class="dashicons dashicons-trash" style="margin-top: 3px;color: red;"></span>' . esc_html__( 'Remove All', 'support-to-slack' ); ?></a>
 					<input type="hidden" class="dayexception_last_count" name="<?php echo $args['section'] ?>[<?php echo $args['id'] ?>][unique_last_count]"
@@ -836,7 +836,7 @@
 			 */
 			public function show_navigation()
 			{
-				$html = '<h2 class="nav-tab-wrapper" id="slack_settings_nav">';
+				$html = '<h2 class="slack-support-nav-tab" id="slack_settings_nav">';
 
 				foreach ($this->settings_sections as $tab) {
 					$html .= sprintf('<a href="#%1$s" class="settings_section" id="%1$s-tab">%2$s</a>', $tab['id'], $tab['title']);
@@ -867,7 +867,7 @@
 									do_action('support_to_slack_form_bottom_' . $form['id'], $form);
 								?>
 								<div style="padding-left: 10px">
-									<?php submit_button(); ?>
+									<?php submit_button('Save Settings','save_slack_settings'); ?>
 								</div>
 							</form>
 						</div>
