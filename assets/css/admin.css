@@ -25,13 +25,13 @@
 /* Repeater Field Css */
 .feed_item .feed_item_label {
 	float: left;
-	width: 25%;
+	width: 33%;
 	margin-top: 6px;
 }
 
 .feed_item .feed_item_field {
 	float: left;
-	width: 75%;
+	width: 67%;
 	margin-top: 6px;
 }
 
@@ -117,8 +117,8 @@ textarea {
 #post-body-content .meta-box-sortables .postbox #slack_settings_nav {
 	padding-bottom: 24px;
 	padding-top: 10px;
-    padding-left: 0;
-    margin-left: -12px;
+	padding-left: 0;
+	margin-left: -12px;
 }
 
 .slack-support-nav-tab .settings_section {
@@ -127,18 +127,18 @@ textarea {
 	font-size: 15px;
 	font-weight: bold;
 	background-color: #f8fafb;
-    color: #516378;
+	color: #516378;
 }
 
 .slack-support-nav-tab .nav-tab-active {
 	border-color: #ccc;
 	border-bottom: none;
-	color: #3b3bc0;
+	color: #2271b1;
 	font-size: 15px;
 	font-weight: bold;
 	background: #ebe9f3;
 	padding: 10px 15px 15px;
-	border-top: 3px solid #6a046c;
+	border-top: 3px solid #2271b1;
 }
 
 .feed_item .feed_item_label {
@@ -163,6 +163,10 @@ textarea {
 	position: relative;
 }
 
+.feed_item_label .switch:before{
+	left: 188px;
+    top: -4px;
+}
 .switch:before {
 	content: "";
 	width: 60px;
@@ -262,120 +266,156 @@ textarea {
 	height: 64px;
 	width: 64px;
 }
-#slack_settings_head{
+
+#slack_settings_head {
 	height: 30px;
-    width: 30px;
-    margin: -10px 6px;
-}
-.support_settings_head_sec{
-	height: auto;
-    background: #fff;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 20px 5px;
-}
-.support_settings_head_sec h2{
-	display: inline-block;
-	font-size: 22px;
-    color: #444;
-    font-weight: 600;
-    margin: 0px;
-    line-height: 35px;
-}
-#slack_settings_box{
-	border: 0;
-}
-.button.save_slack_settings{
-	background-color: #6a046c;
-	background-image: -webkit-linear-gradient( 260deg , #6a046c 0%, #62a1ff 100%);
-    color: rgb(255, 255, 255);
-    letter-spacing: 1px;
-    font-weight: bold;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-width: 0px;
-    padding: 7px 12px;
-    border-radius: 3px;
-    margin: 30px 0px;
-    transition: all 0.3s ease 0s;
-    font-size: 13px;
+	width: 30px;
+	margin: -10px 6px;
 }
 
-.button.save_slack_settings:hover{
-	background-image: -webkit-linear-gradient( 260deg , #6a046c 0%, #62a1ff 100%);
-	color: rgb(255, 255, 255);
+.support_settings_head_sec {
+	height: auto;
+	background: #fff;
+	align-items: center;
+	margin-bottom: 20px;
+	padding: 20px 5px;
 }
-#ourplugin_info_sidebar .postbox{
+
+.support_settings_head_sec h2 {
+	display: inline-block;
+	font-size: 22px;
+	color: #444;
+	font-weight: 600;
+	margin: 0px;
+	line-height: 35px;
+}
+
+#slack_settings_box {
 	border: 0;
 }
-.sidebar_plugin{
+
+#ourplugin_info_sidebar .postbox {
+	border: 0;
+}
+
+.sidebar_plugin {
 	padding-top: 6px;
 }
 
-.product_images{
-	
-}
-.product_logo{
+.product_images {}
+
+.product_logo {
 	height: 80px;
 }
 
-.wppool_single_product{
+.wppool_single_product {
 	border-bottom: 1px solid #6a046c;
-	margin-bottom: 15px;
+	padding-bottom: 40px;
+	margin-bottom: 10px;
 }
-.product_desc a{
+
+.product_desc a {
 	text-decoration: none;
+	padding: 0px 0px;
+	font-size: 13px;
 }
-.product_desc p{
+
+.product_desc p {
 	font-size: 14px;
+	margin-bottom: 5px;
 }
-.product_desc h3{
+
+.product_desc h3 {
 	font-size: 20px;
 	margin: 0px 0 0 0;
 }
-.product_desc .product_landing{
+.product_desc .button{
+	float: right;
+}
+.product_desc .product_landing {
 	cursor: pointer;
-    display: inline-block;
-    position: relative;
-    margin: 0;
-    border-width: 2px;
-    border-style: solid;
-    border-color: transparent;
-    border-radius: 4px;
-    text-decoration: none;
-    text-align: center;
-    -webkit-transition: all 0.3s ease;
-    transition: all 0.3s ease;
+	display: inline-block;
+	position: relative;
+	margin: 0;
+	border-width: 2px;
+	border-style: solid;
+	border-color: transparent;
+	border-radius: 4px;
+	text-decoration: none;
+	text-align: center;
+	-webkit-transition: all 0.3s ease;
+	transition: all 0.3s ease;
 	width: auto;
-    min-width: 80px;
-    padding: 5px 14px;
-    background-color: #888;
-    color: #fff;
-    font: 500 12px/16px "Roboto",Arial,sans-serif;
-    letter-spacing: -.25px;
-    text-transform: uppercase;
+	min-width: 80px;
+	padding: 5px 14px;
+	background-color: #888;
+	color: #fff;
+	font: 500 12px/16px "Roboto", Arial, sans-serif;
+	letter-spacing: -.25px;
+	text-transform: uppercase;
 	border-color: #ddd;
-    background-color: transparent;
-    color: #888;
+	background-color: transparent;
+	color: #888;
 	margin-bottom: 10px;
 	display: flow-root;
 }
-.product_landing .wppool-icon-arrow-right{
-	
-}
-.wppool_p_logo{
+
+.product_landing .wppool-icon-arrow-right {}
+
+.wppool_p_logo {
 	float: left;
 	margin-right: 10px;
 }
-.product_desc{
+
+.product_desc {
 	display: contents;
 }
-.product_desc a p{
 
-}
-.use_global_webhook_label, #use_global_webhook{
+.product_desc a p {}
+
+.use_global_webhook_label,
+#use_global_webhook {
 	float: right;
 }
-.use_global_webhook_label{
+
+.use_global_webhook_label {
 	margin-top: -5px;
+}
+
+.webhook_tooltip {
+	position: relative;
+	padding: 2.5px 7px;
+	margin: 5px;
+	font-size: 10px;
+	border-radius: 100%;
+	border: 2px solid #beaeae;
+	font-weight: bold;
+	display: inline-block;
+}
+
+.webhook_tooltip .webhook_tooltip_text {
+	visibility: hidden;
+	width: 154px;
+	background-color: black;
+	color: #fff;
+	text-align: center;
+	border-radius: 6px;
+	padding: 5px 0;
+	position: absolute;
+	z-index: 1;
+	font-size: 11px;
+	top: -45px;
+	right: -70px;
+}
+
+.webhook_tooltip:hover .webhook_tooltip_text {
+	visibility: visible;
+}
+.feed_item{
+	height: 60px;
+}
+.switch_after{
+	float: right;
+    margin-top: -2px;
+    left: -4px;
 }

@@ -23,13 +23,13 @@ if (!defined('WPINC')) {
                         <div class="product_images">
                             <div class="wppool_p_logo">
                                 <span>
-                                    <a href="https://wordpress.org/plugins/wp-dark-mode/"><img class="product_logo" src="<?php echo SUPPORT_TO_SLACK_ASSETS; ?>/images/dark-mode-logo.gif" /></a>
+                                    <a href="https://wppool.dev/wp-dark-mode/"><img class="product_logo" src="<?php echo SUPPORT_TO_SLACK_ASSETS; ?>/images/dark-mode-logo.gif" /></a>
                                 </span>
                             </div>
                             <div class="product_desc">
-                                <a href="https://wordpress.org/plugins/wp-dark-mode/"><h3>WP Dark Mode</h3></a>
-                                <p>Use WP Dark Mode plugin to create a stunning dark version for your WordPress website. WP Dark Mode works automatically without going into any complicated settings.</p>
-                                <a href="https://wordpress.org/plugins/wp-dark-mode/" target="_blank" class="product_landing">View features&nbsp;&nbsp;&nbsp;<span aria-hidden="true" class="wppool-icon-arrow-right"></span></a>
+                                <a href="https://wppool.dev/wp-dark-mode/"><h3><?php esc_html_e('WP Dark Mode', '') ?></h3></a>
+                                <p><?php esc_html_e('Use WP Dark Mode plugin to create a stunning dark version for your WordPress website. WP Dark Mode works automatically without going into any complicated settings.', ''); ?></p>
+                                <a href="https://wppool.dev/wp-dark-mode/" target="_blank" class="button button-primary button-large"><?php esc_html_e('View features', '') ?><span aria-hidden="true" class="wppool-icon-arrow-right"></span></a>
                             </div>
                         </div>
                     </div>
@@ -37,13 +37,13 @@ if (!defined('WPINC')) {
                         <div class="product_images">
                             <div class="wppool_p_logo">
                                 <span>
-                                    <a href="https://wordpress.org/plugins/dark-mode/"><img class="product_logo" src="<?php echo SUPPORT_TO_SLACK_ASSETS; ?>/images/markdown_logo.png" /></a>
+                                    <a href="https://wppool.dev/wp-markdown-editor/"><img class="product_logo" src="<?php echo SUPPORT_TO_SLACK_ASSETS; ?>/images/markdown_logo.png" /></a>
                                 </span>
                             </div>
                             <div class="product_desc">
-                                <a href="https://wordpress.org/plugins/dark-mode/"><h3>WP Markdown Editor (Formerly Dark Mode)</h3></a>
-                                <p>If you want to quickly edit content in WordPress without thinking about blocks, WP Markdown Editor is the perfect choice for you! Get an immersive, peaceful and natural writing experience with the coolest editor – WP Markdown Editor.</p>
-                                <a href="https://wordpress.org/plugins/dark-mode/" target="_blank" class="product_landing">View features&nbsp;&nbsp;&nbsp;<span aria-hidden="true" class="wppool-icon-arrow-right"></span></a>
+                                <a href="https://wppool.dev/wp-markdown-editor/"><h3><?php esc_html_e('WP Markdown Editor (Formerly Dark Mode)', '') ?></h3></a>
+                                <p><?php esc_html_e('Use WP Dark Mode plugin to create a stunning dark version for your WordPress website. WP Dark Mode works automatically without going into any complicated settings.', ''); ?></p>
+                                <a href="https://wppool.dev/wp-markdown-editor/" target="_blank" class="button button-primary button-large"><?php esc_html_e('View features', '') ?><span aria-hidden="true" class="wppool-icon-arrow-right"></span></a>
                             </div>
                         </div>
                     </div>
@@ -55,9 +55,9 @@ if (!defined('WPINC')) {
                                 </span>
                             </div>
                             <div class="product_desc">
-                                <a href="https://wordpress.org/plugins/webinar-and-video-conference-with-jitsi-meet/"><h3>Webinar and Video Conference with Jitsi Meet</h3></a>
-                                <p>Host live webinars, conferences, online classes, video calls directly on your WordPress website with attendee experience without any technical skills.</p>
-                                <a href="https://wordpress.org/plugins/webinar-and-video-conference-with-jitsi-meet/" target="_blank" class="product_landing">View features&nbsp;&nbsp;&nbsp;<span aria-hidden="true" class="wppool-icon-arrow-right"></span></a>
+                                <a href="https://wordpress.org/plugins/webinar-and-video-conference-with-jitsi-meet/"><h3><?php esc_html_e('Webinar and Video Conference with Jitsi Meet', '') ?></h3></a>
+                                <p><?php esc_html_e('Use WP Dark Mode plugin to create a stunning dark version for your WordPress website. WP Dark Mode works automatically without going into any complicated settings.', ''); ?></p>
+                                <a href="https://wordpress.org/plugins/webinar-and-video-conference-with-jitsi-meet/" target="_blank" class="button button-primary button-large"><?php esc_html_e('View features', '') ?><span aria-hidden="true" class="wppool-icon-arrow-right"></span></a>
                                 
                             </div>
                         </div>

@@ -58,8 +58,6 @@
             add_action('admin_init', array( $this, 'settings_init' ));
             add_action('admin_enqueue_scripts', array( $this, 'enqueue_scripts' ));
             add_action('admin_enqueue_scripts', array( $this, 'enqueue_styles' ));
-            add_action('admin_notices', array( $this, 'admin_notices' ));
-            //add_action('init', 'WP_To_Slack_Helper::support_slack_cron_activate');
 
             $feed_list = get_option( 'theme_plugin_list');
             if(!empty($feed_list['plugin_theme_feed']) && array_key_exists('feed', $feed_list['plugin_theme_feed'])) {
@@ -72,12 +70,9 @@
                 add_action( 'cron_save_org_downloads', 'WP_To_Slack_Helper::org_daily_download_count' );
             }
 
-            /* add_action('wp_ajax_fetch_wordpress_plugin', array( $this, 'fetch_wordpress_plugin'));
-            add_action('wp_ajax_nopriv_fetch_wordpress_plugin', array( $this, 'fetch_wordpress_plugin')); */
         }
 
-        public function settings_init()
-        {
+        public function settings_init(){
             $this->setting->set_sections($this->get_settings_sections());
             $this->setting->set_fields($this->get_settings_field());
             $this->setting->admin_init();
@@ -88,8 +83,7 @@
          *
          * @since    1.0.0
          */
-        public function enqueue_styles($hook = '')
-        {
+        public function enqueue_styles($hook = ''){
             global $post;
             $settings = $this->setting;
             $page     = isset($_GET['page']) ? esc_attr(wp_unslash($_GET['page'])) : '';
@@ -112,8 +106,7 @@
          *
          * @since    1.0.0
          */
-        public function enqueue_scripts($hook = '')
-        {
+        public function enqueue_scripts($hook = ''){
             global $post;
             $settings       = $this->setting;
             $page           = isset($_GET['page']) ? esc_attr(wp_unslash($_GET['page'])) : '';
@@ -162,8 +155,7 @@
         /**
          * This admin_menu method will create options page
          */
-        public function create_admin_menu()
-        {
+        public function create_admin_menu(){
             add_menu_page(
                 __('WordPress Support To Slack', 'wpdocs-webnail-modules'),
                 __('WP To Slack', 'wpdocs-webnail-modules'),
@@ -177,14 +169,12 @@
         /**
          * This callback method
          */
-        public function support_to_slack_fields()
-        {
+        public function support_to_slack_fields(){
             $setting = $this->setting;
             echo support_to_slack_get_template_html('admin/setting.php', array( 'ref' => $this, 'setting' => $setting ));
         }// end of wp_slack_support_options_page_data method
 
-        public function get_settings_sections()
-        {
+        public function get_settings_sections(){
             $sections = array(
                 array(
                     'id'    => 'theme_plugin_list',
@@ -203,8 +193,7 @@
             return apply_filters('support-to-slack-admin_sections', $sections);
         }// end of get_settings_sections method
 
-        public function get_settings_field()
-        {
+        public function get_settings_field(){
             $settings_builtin_fields = array(
                 'theme_plugin_list'       => array(
                     array(
@@ -218,18 +207,18 @@
                 'slack_support_settings'    => array(
                     array(
                         'name'    => 'enable_rating',
-                        'label'   => esc_html__('Enable Plugin/Theme Rating Notification', 'support-to-slack'),
+                        'label'   => esc_html__('Enable Rating Notification', 'support-to-slack'),
                         'type'    => 'checkbox',
                         'default' => 'on'
                     ),
                     array(
                         'name'    => 'enable_download_count',
-                        'label'   => esc_html__('Enable Plugin/Theme Daily Download Count', 'support-to-slack'),
+                        'label'   => esc_html__('Enable Daily Download Count', 'support-to-slack'),
                         'type'    => 'checkbox',
                     ),
                     array(
                         'name' => 'download_webhook',
-                        'label' => __('Slack Webhook To Send Download Notification', 'support-to-slack'),
+                        'label' => __('Slack Webhook To Send Download Notification', 'support-to-slack').'<div class="webhook_tooltip">?<span class="webhook_tooltip_text">Which Slack channnel you wnant to send notifications</span></div>',
                         'desc' => '',
                         'type' => 'text',
                         'default' => ''
@@ -273,34 +262,6 @@
 
             return $settings_fields;
         }//end get_settings_field
-
-        /**
-         * Undocumented function
-         *
-         * @return void
-         */
-        public function admin_notices()
-        {
-            if (! empty($_GET['feed-updated'])) {
-                echo '<div class="notice notice-success is-dismissible"><p>'.esc_html__("Feed Updated", "support-to-slack").'</p></div>';
-            }
-            
-            if (! empty($_GET['cron-deleted'])) {
-                echo '<div class="notice notice-success is-dismissible"><p>'.esc_html__("Feed deleted successfully!", "support-to-slack").'</p></div>';
-            }
-            
-            if (! empty($_GET['inserted'])) {
-                echo '<div class="notice notice-success is-dismissible"><p>'.esc_html__("Plugin Feed has been added successfully!", "support-to-slack").'</p></div>';
-            }
-        }
-        public function fetch_wordpress_plugin() {
-            // Grab php file output from server
-            ob_start();
-            include('file:///C:/xampp/htdocs/slack_test/wp-content/plugins/wp-support-to-slack/templates/admin/sidebar.php');
-            $result = ob_get_contents();
-            ob_end_clean();
-            $return = array('content' => $result);
-            wp_send_json($return);
-            wp_die();
-        }
+        
+        
     }//end class WP_Support_Slack_Admin

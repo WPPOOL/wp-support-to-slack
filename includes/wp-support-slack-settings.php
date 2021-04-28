@@ -610,8 +610,10 @@
 									//write_log($exception);
 									if(isset($exception['global_hook']) && $exception['global_hook'] == "on"){
 										$checked = "checked";
+										$display = "";
 									}else{
 										$checked = "";
+										$display = "none";
 									}
 									$disabled = isset($exception['global_hook']) && $exception['global_hook'] == "on" ? 'disabled' : "";
 									?>
@@ -625,14 +627,14 @@
                                     <div class="accordion_content">
                                     <div class="feed_item">
                                         <div class="feed_item_label">
-                                            <label for="slack_webhook'+'_<?php echo $key ?>"><?php esc_html_e('Slack Webhook', ''); ?></label>
+                                            <label for="slack_webhook'+'_<?php echo $key ?>" class="switch"><?php esc_html_e('Use Diffrent Webhook', ''); ?><div class="webhook_tooltip">?<span class="webhook_tooltip_text">Which Slack channnel you want to send notifications</span></div><input type="checkbox" class="diffrent_hook" id="slack_webhook'+'_<?php echo $key ?>" name="<?php echo $args['section'] ?>[<?php echo $args['id'] ?>][feed][<?php echo esc_attr( $key ); ?>][global_hook]" value="on" <?php echo $checked ?> /><div class="switch_after"><span></span></div></label>
                                         </div>
 										<!-- <label for="use_global_webhook" class="use_global_webhook_label"></label> -->
-										<span class="use_global_webhook_label"><?php esc_html_e('Use Global Slack Webhook Instead', 'support-to-slack') ?></span>
-										<input type="checkbox" name="<?php echo $args['section'] ?>[<?php echo $args['id'] ?>][feed][<?php echo esc_attr( $key ); ?>][global_hook]" class="use_global_webhook" id="use_global_webhook" value="on" <?php echo $checked ?>/>
+										<!-- <span class="use_global_webhook_label"><?php //esc_html_e('Use Global Slack Webhook Instead', 'support-to-slack') ?></span> -->
+										<!-- <input type="checkbox" name="<?php //echo $args['section'] ?>[<?php //echo $args['id'] ?>][feed][<?php //echo esc_attr( $key ); ?>][global_hook]" class="use_global_webhook" id="use_global_webhook" value="on" <?php //echo $checked ?>/> -->
 										<!-- <div><span></span></div> -->
                                         <div class="feed_item_field">
-                                            <input type="text" class="support_slack_webhook" placeholder="<?php esc_html_e('Webhook', 'support-to-slack'); ?>" name="<?php echo $args['section'] ?>[<?php echo $args['id'] ?>][feed][<?php echo esc_attr( $key ); ?>][webhook]" value="<?php echo isset($exception['webhook']) ? esc_attr( $exception['webhook'] ) : '' ?>" <?php echo $disabled; ?> />
+                                            <input style="display:<?php echo $display; ?>" type="text" class="support_slack_webhook" placeholder="<?php esc_html_e('Webhook', 'support-to-slack'); ?>" name="<?php echo $args['section'] ?>[<?php echo $args['id'] ?>][feed][<?php echo esc_attr( $key ); ?>][webhook]" value="<?php echo isset($exception['webhook']) ? esc_attr( $exception['webhook'] ) : '' ?>" <?php //echo $disabled; ?> />
                                         </div>
                                     </div>
 
@@ -641,8 +643,7 @@
                                                 <label for="plugin_slug'+'_<?php echo $key ?>'"><?php esc_html_e('Plugin / Theme Link', ''); ?></label>
                                             </div>
                                             <div class="feed_item_field">
-                                                <input type="text" class="" placeholder="<?php esc_html_e('Plugin/Theme link', 'support-to-slack') ?>"
-                                                name="<?php echo $args['section'] ?>[<?php echo $args['id'] ?>][feed][<?php echo esc_attr( $key ); ?>][org_link]"
+                                                <input type="text" class="" placeholder="<?php esc_html_e('Plugin/Theme link', 'support-to-slack') ?>" name="<?php echo $args['section'] ?>[<?php echo $args['id'] ?>][feed][<?php echo esc_attr( $key ); ?>][org_link]"
                                                 value="<?php echo esc_attr( $exception['org_link'] ) ?>" />
                                         </div>
                                     </div>
@@ -867,7 +868,7 @@
 									do_action('support_to_slack_form_bottom_' . $form['id'], $form);
 								?>
 								<div style="padding-left: 10px">
-									<?php submit_button('Save Settings','save_slack_settings'); ?>
+									<?php submit_button('Save Settings', 'button button-primary button-large'); ?>
 								</div>
 							</form>
 						</div>

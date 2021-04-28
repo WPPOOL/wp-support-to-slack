@@ -36,6 +36,8 @@ final class WPSupportToSlack {
 		$this->load_dependencies();
 		add_filter('cron_schedules', array($this, 'support_slack_cron_update_schedules'));
 		add_filter('plugin_action_links_'.plugin_basename(__FILE__), array($this, 'support_add_plugin_page_settings_link'));
+        add_action( 'admin_init', array( $this, 'support_to_slack_activation_redirect') );
+        register_activation_hook( __FILE__, array( $this, 'support_to_slack_activation') );
     }
 
 	private function load_dependencies(){
@@ -159,6 +161,17 @@ final class WPSupportToSlack {
                 $schedules['minute_count'] = array('interval' => 60,  'display' => 'Daily');
             }
             return $schedules;
+        }
+
+        public function support_to_slack_activation(){
+            add_option('do_activation_redirect', true);
+        }
+
+        public function support_to_slack_activation_redirect() {
+            if (get_option('do_activation_redirect', false)) {
+                delete_option('do_activation_redirect');
+                wp_redirect(admin_url("admin.php?page=wp_support_to_slack_page#slack_support_settings"));
+             }
         }
 
 }

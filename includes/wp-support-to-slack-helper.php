@@ -40,7 +40,7 @@
                         $slug = basename($single_feed['org_link']);
                         //write_log($single_feed);
                         $global_hook = get_option('slack_support_settings');
-                        $hook_type = isset( $single_feed['global_hook'] ) && $single_feed['global_hook'] == 'on' ? $global_hook['download_webhook'] : $single_feed['webhook'];
+                        $hook_type = $single_feed['global_hook'] == 'on' ? $single_feed['webhook'] : $global_hook['download_webhook'];
                         //write_log($hook_type);
                         
                         $plugin_info = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
@@ -81,6 +81,7 @@
 
                         $global_hook = get_option('slack_support_settings');
                         $hook_type = isset( $single_feed['global_hook'] ) && $single_feed['global_hook'] == 'on' ? $global_hook['download_webhook'] : $single_feed['webhook'];
+                        write_log($hook_type);
 
                         $plugin_info = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
                         $plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
@@ -95,7 +96,7 @@
             }
         
             if ( $cron_settings['enable_download_count'] == 'on' && !empty( $cron_settings['download_webhook'] ) && !wp_next_scheduled('cron_save_org_downloads')) :
-                wp_schedule_event(time(), 'minute_count', 'cron_save_org_downloads'); // 1407110400 is 08 / 4 / 2014 @ 0:0:0 UTC
+                wp_schedule_event(time(), 'daily_count', 'cron_save_org_downloads'); // 1407110400 is 08 / 4 / 2014 @ 0:0:0 UTC
             endif;
         }
 
