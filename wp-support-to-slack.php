@@ -98,6 +98,7 @@ final class WPSupportToSlack {
         if( isset($feed_list['plugin_theme_feed']['feed'])){
             foreach ($feed_list['plugin_theme_feed']['feed'] as $key => $single_feed) {
                 wp_clear_scheduled_hook('support_to_slack_event_'.$key.'');
+                wp_clear_scheduled_hook('unresolved_support_interval_'.$key.'');
             }
         }
 		
@@ -113,7 +114,7 @@ final class WPSupportToSlack {
         public function support_add_plugin_page_settings_link($links)
         {
             $links[] = '<a href="' .
-            admin_url('admin.php?page=wp_support_to_slack_page') .
+            admin_url('admin.php?page=wp-support-to-slack-page') .
             '">' . __('Settings', 'support-to-slack') . '</a>';
             return $links;
         }
@@ -157,6 +158,7 @@ final class WPSupportToSlack {
                 }
                 //write_log($schedules);
                
+                $schedules['every_12'] = array('interval' => 60 * 60 * 12,  'display' => 'Daily');
                 $schedules['daily_count'] = array('interval' => 60 * 60 * 24,  'display' => 'Daily');
                 $schedules['minute_count'] = array('interval' => 60,  'display' => 'Daily');
             }
@@ -170,7 +172,7 @@ final class WPSupportToSlack {
         public function support_to_slack_activation_redirect() {
             if (get_option('do_activation_redirect', false)) {
                 delete_option('do_activation_redirect');
-                wp_redirect(admin_url("admin.php?page=wp_support_to_slack_page#slack_support_settings"));
+                wp_redirect(admin_url("admin.php?page=wp-support-to-slack-page#slack_support_settings"));
              }
         }
 

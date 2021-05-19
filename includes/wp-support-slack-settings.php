@@ -338,10 +338,10 @@
 				$value = esc_attr($this->get_option($args['id'], $args['section'], $args['default']));
 
 				$html = '<fieldset>';
-				$html .= sprintf('<label for="wpuf-%1$s[%2$s]" class="switch">', $args['section'], $args['id']);
+				$html .= sprintf('<label for="wpuf-%1$s[%2$s]" class="settings_switch">', $args['section'], $args['id']);
 				$html .= sprintf('<input type="hidden" name="%1$s[%2$s]" value="off" />', $args['section'], $args['id']);
 				$html .= sprintf('<input type="checkbox" class="checkbox" id="wpuf-%1$s[%2$s]" name="%1$s[%2$s]" value="on" %3$s />', $args['section'], $args['id'], checked($value, 'on', false));
-				$html .= sprintf('<div><span></span></div>');
+				$html .= sprintf('<span class="settings_switch_after"></span>');
 				$html .= sprintf('%1$s</label>', $args['desc']);
 				$html .= '</fieldset>';
 
@@ -627,13 +627,10 @@
                                     <div class="accordion_content">
                                     <div class="feed_item">
                                         <div class="feed_item_label">
-                                            <label for="slack_webhook'+'_<?php echo $key ?>" class="switch"><?php esc_html_e('Use Diffrent Webhook', ''); ?><div class="webhook_tooltip">?<span class="webhook_tooltip_text">Which Slack channnel you want to send notifications</span></div><input type="checkbox" class="diffrent_hook" id="slack_webhook'+'_<?php echo $key ?>" name="<?php echo $args['section'] ?>[<?php echo $args['id'] ?>][feed][<?php echo esc_attr( $key ); ?>][global_hook]" value="on" <?php echo $checked ?> /><div class="switch_after"><span></span></div></label>
+                                            <label for="slack_webhook'+'_<?php echo $key ?>" class="switch"><?php esc_html_e('Use Diffrent Webhook', ''); ?><div class="webhook_tooltip">?<span class="webhook_tooltip_text">Which Slack channnel you want to send notifications</span></div><input type="checkbox" class="diffrent_hook" id="slack_webhook'+'_<?php echo $key ?>" name="<?php echo $args['section'] ?>[<?php echo $args['id'] ?>][feed][<?php echo esc_attr( $key ); ?>][global_hook]" value="on" <?php echo $checked ?> /><span class="switch_after"></span></label>
                                         </div>
-										<!-- <label for="use_global_webhook" class="use_global_webhook_label"></label> -->
-										<!-- <span class="use_global_webhook_label"><?php //esc_html_e('Use Global Slack Webhook Instead', 'support-to-slack') ?></span> -->
-										<!-- <input type="checkbox" name="<?php //echo $args['section'] ?>[<?php //echo $args['id'] ?>][feed][<?php //echo esc_attr( $key ); ?>][global_hook]" class="use_global_webhook" id="use_global_webhook" value="on" <?php //echo $checked ?>/> -->
-										<!-- <div><span></span></div> -->
-                                        <div class="feed_item_field">
+
+                                        <div class="feed_item_field" style="margin-top: 42px;">
                                             <input style="display:<?php echo $display; ?>" type="text" class="support_slack_webhook" placeholder="<?php esc_html_e('Webhook', 'support-to-slack'); ?>" name="<?php echo $args['section'] ?>[<?php echo $args['id'] ?>][feed][<?php echo esc_attr( $key ); ?>][webhook]" value="<?php echo isset($exception['webhook']) ? esc_attr( $exception['webhook'] ) : '' ?>" <?php //echo $disabled; ?> />
                                         </div>
                                     </div>
@@ -668,11 +665,11 @@
 						?>
 					</div>
 					<br/>
-					<a class="add_exception button" data-name="<?php echo $args['id'] ?>" data-section="<?php echo $args['section'] ?>">
-						<span class="dashicons dashicons-plus-alt" style="margin-top: 5px;color: #2cff1e;"></span>
+					<a class="add_feed button" data-name="<?php echo $args['id'] ?>" data-section="<?php echo $args['section'] ?>">
+						<span class="dashicons dashicons-plus-alt2" style="margin-top: 5px;"></span>
 						<?php echo esc_html__( 'Add New', 'support-to-slack' ); ?>
 					</a>
-					<a class="removeall_exception button"><?php echo '<span class="dashicons dashicons-trash" style="margin-top: 3px;color: red;"></span>' . esc_html__( 'Remove All', 'support-to-slack' ); ?></a>
+					<a class="removeall_feed button"><?php echo '<span class="dashicons dashicons-trash" style="margin-top: 3px;color: red;"></span>' . esc_html__( 'Remove All', 'support-to-slack' ); ?></a>
 					<input type="hidden" class="dayexception_last_count" name="<?php echo $args['section'] ?>[<?php echo $args['id'] ?>][unique_last_count]"
 						   value="<?php echo intval( $unique_last_count ); ?>"/>
 				</div>

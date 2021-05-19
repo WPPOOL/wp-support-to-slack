@@ -63,12 +63,14 @@
             if(!empty($feed_list['plugin_theme_feed']) && array_key_exists('feed', $feed_list['plugin_theme_feed'])) {
                 foreach ($feed_list['plugin_theme_feed']['feed'] as $key => $value) {
                     add_action('support_to_slack_event_'.$key.'', 'WP_To_Slack_Helper::support_to_slack_msg_request', 10, 4);
+                    add_action('unresolved_support_interval_'.$key.'', 'WP_To_Slack_Helper::unresolved_support_fixed_int_request', 10, 4);
                 }
             }
             $notification_settings = get_option('slack_support_settings');
             if($notification_settings['enable_download_count'] == 'on'){
                 add_action( 'cron_save_org_downloads', 'WP_To_Slack_Helper::org_daily_download_count' );
             }
+            add_shortcode( 'install_ratings', 'WP_To_Slack_Helper::active_install_ratings' );
 
         }
 
@@ -88,7 +90,7 @@
             $settings = $this->setting;
             $page     = isset($_GET['page']) ? esc_attr(wp_unslash($_GET['page'])) : '';
 
-            if ($page == 'wp_support_to_slack_page') {
+            if ($page == 'wp-support-to-slack-page') {
                 wp_register_style( 'select2', plugin_dir_url( __FILE__ ) . '../assets/select2/css/select2.min.css', array(), $this->version );
 				wp_register_style( 'jquery-timepicker', plugin_dir_url( __FILE__ ) . '../assets/css/jquery.timepicker.min.css', array(), $this->version, 'all' );
 				wp_register_style( 'jquery-ui', plugin_dir_url( __FILE__ ) . '../assets/css/jquery-ui.css', array(), $this->version, 'all' );
@@ -112,7 +114,7 @@
             $page           = isset($_GET['page']) ? esc_attr(wp_unslash($_GET['page'])) : '';
 
 
-            if ($page == 'wp_support_to_slack_page') {
+            if ($page == 'wp-support-to-slack-page') {
                 wp_register_script('select2', plugin_dir_url(__FILE__) . '../assets/select2/js/select2.min.js', array( 'jquery' ), $this->version, true);
                 wp_register_script(
                     'support_to_slack_admin',
@@ -160,7 +162,7 @@
                 __('WordPress Support To Slack', 'wpdocs-webnail-modules'),
                 __('WP To Slack', 'wpdocs-webnail-modules'),
                 'manage_options',
-                'wp_support_to_slack_page',
+                'wp-support-to-slack-page',
                 array( $this, 'support_to_slack_fields' ),
                 'dashicons-superhero'
             );

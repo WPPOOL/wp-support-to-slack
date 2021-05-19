@@ -26,6 +26,7 @@
             if( isset($feed_list['plugin_theme_feed']['feed'])){
                 foreach ($feed_list['plugin_theme_feed']['feed'] as $key => $single_feed) {
                     wp_clear_scheduled_hook('support_to_slack_event_'.$key.'');
+                    wp_clear_scheduled_hook('unresolved_support_interval_'.$key.'');
                 }
             }
             require_once( ABSPATH . 'wp-admin/includes/plugin-install.php' );
@@ -41,11 +42,16 @@
                         //write_log($single_feed);
                         $global_hook = get_option('slack_support_settings');
                         $hook_type = $single_feed['global_hook'] == 'on' ? $single_feed['webhook'] : $global_hook['download_webhook'];
-                        //write_log($hook_type);
                         
                         $plugin_info = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
                         $plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
                         wp_schedule_event(time(), $recurrence, 'support_to_slack_event_'.$key.'', array(
+                            'plugin_feed_url' => $slug,
+                            'slack_webhook' => $hook_type,
+                            'plugin_name' => $plugin_name,
+                            'custom_message' => $single_feed['message'],
+                        ));
+                        wp_schedule_event(time(), 'every_12', 'unresolved_support_interval_'.$key.'', array(
                             'plugin_feed_url' => $slug,
                             'slack_webhook' => $hook_type,
                             'plugin_name' => $plugin_name,
@@ -63,7 +69,7 @@
          *
          * @return void
          */
-        public static function support_slack_cron_activate ( $feed_list = null ) {
+        public static function support_slack_cron_activate () {
             // Dont't Run => Not in Schedule Cronjobs
             //$args = get_current_user_id();
 			require_once( ABSPATH . 'wp-admin/includes/plugin-install.php' );
@@ -80,12 +86,19 @@
                         $slug = basename($single_feed['org_link']);
 
                         $global_hook = get_option('slack_support_settings');
-                        $hook_type = isset( $single_feed['global_hook'] ) && $single_feed['global_hook'] == 'on' ? $global_hook['download_webhook'] : $single_feed['webhook'];
-                        write_log($hook_type);
+                        $hook_type = !empty( $single_feed['global_hook'] ) && $single_feed['global_hook'] == 'on' ? $global_hook['download_webhook'] : $single_feed['webhook'];
+                        //write_log($single_feed['webhook']);
 
                         $plugin_info = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
                         $plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
                         wp_schedule_event(time(), $recurrence, 'support_to_slack_event_'.$key.'', array(
+                            'plugin_feed_url' => $slug,
+                            'slack_webhook' => $hook_type,
+                            'plugin_name' => $plugin_name,
+                            'custom_message' => $single_feed['message'],
+                        ));
+
+                        wp_schedule_event(time(), 'every_12', 'unresolved_support_interval_'.$key.'', array(
                             'plugin_feed_url' => $slug,
                             'slack_webhook' => $hook_type,
                             'plugin_name' => $plugin_name,
@@ -116,7 +129,8 @@
             } elseif ($plugin_or_theme == 'plugin') {
                 
             } */
-            //write_log($plugin_name);
+            // write_log($hook_url);
+            // write_log($plugin_name);
 
             libxml_use_internal_errors(true);
             $plugin_feed = 'https://wordpress.org/support/plugin/'.$plugin_feed_url.'/feed';
@@ -192,18 +206,20 @@
                 
                     if (!empty($new_seq)) {
                         $message = array('payload' => json_encode(array(
-                    'text' => $custom_message,
-                    "blocks" =>
-                            $new_seq
+                            'text' => $custom_message,
+                            "blocks" => $new_seq
                         )));
-                        // Use curl to send your message
-                        $ch = curl_init($hook_url);
-                        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-                        curl_setopt($ch, CURLOPT_POSTFIELDS, $message);
-                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                        $result = curl_exec($ch);
-                        curl_close($ch);
-                        //return $result;
+
+                        $args = array(
+                            'body'        => $message,
+                            'timeout'     => '5',
+                            'redirection' => '5',
+                            'httpversion' => '1.0',
+                            'blocking'    => true,
+                            'headers'     => array(),
+                            'cookies'     => array(),
+                        );
+                        $response = wp_remote_post( $hook_url, $args );
                     }
                 }
             }
@@ -267,7 +283,7 @@
                             }
                         }
                     }
-                    //write_log($rating_arr);
+
                     update_option( $plugin_feed_url, 111);
                     $rating_list = array_merge($rating_list, $saved_rating);
                     $rating_list = array_unique($rating_list);
@@ -275,17 +291,20 @@
 
                     if (!empty($rating_arr)) {
                         $message = array('payload' => json_encode(array(
-                    'text' => 'New ratings on wordpress',
-                    "blocks" =>
-                            $rating_arr
+                            'text' => 'New ratings on wordpress',
+                            "blocks" => $rating_arr
                         )));
                         // Use curl to send your message
-                        $ch = curl_init($hook_url);
-                        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-                        curl_setopt($ch, CURLOPT_POSTFIELDS, $message);
-                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                        $result = curl_exec($ch);
-                        curl_close($ch);
+                        $args = array(
+                            'body'        => $message,
+                            'timeout'     => '5',
+                            'redirection' => '5',
+                            'httpversion' => '1.0',
+                            'blocking'    => true,
+                            'headers'     => array(),
+                            'cookies'     => array(),
+                        );
+                        $response = wp_remote_post( $hook_url, $args );
                     }
                 }
             }
@@ -328,20 +347,15 @@
             require_once(ABSPATH . 'wp-admin/includes/plugin-install.php');
 
             $plugin_info = plugins_api('plugin_information', array( 'slug' => 'wp-dark-mode' ));
-            //write_log($plugin_info);
             $downloaded =  get_option('total_downloaded');
-            //write_log($downloaded);
             $download_count = get_option('enable_download_count');
             $count_report_hook = get_option('slack_support_settings');
-            // write_log($downloaded);
 
 
             $plugin_list = array();
             $feed_list = get_option( 'theme_plugin_list');
-            //write_log($feed_list);
             if ($count_report_hook['enable_download_count'] == 'on') {
                 foreach ($feed_list['plugin_theme_feed']['feed'] as $key => $value) {
-                    //write_log($value);
                     $slug = basename($value['org_link']);
                     $plugin_list[$slug] = self::get_plugin_downloads($slug);
                 }
@@ -349,7 +363,6 @@
                 $new_seq = array();
                 $i = 0;
 
-                //write_log($plugin_list);
                 $subtracted = array_map(function ($x, $y) {
                     return $x - $y;
                 }, $plugin_list, $downloaded);
@@ -369,22 +382,160 @@
                     $i++;
                 }
 
-                if (true) {
-                   // write_log($new_seq);
+                if (!empty($new_seq)) {
                     $message = array('payload' => json_encode(array(
                     'text' => 'yesterday plugin\'s download report',
                     "blocks" =>
                         $new_seq
                     )));
+                    $args = array(
+                        'body'        => $message,
+                        'timeout'     => '5',
+                        'redirection' => '5',
+                        'httpversion' => '1.0',
+                        'blocking'    => true,
+                        'headers'     => array(),
+                        'cookies'     => array(),
+                    );
+                    $response = wp_remote_post( $hook_url, $args );
                     // Use curl to send your message
-                    $ch = curl_init($count_report_hook['download_webhook']);
-                    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, $message);
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                    $result = curl_exec($ch);
-                    curl_close($ch);
                 }
                 update_option('total_downloaded', $plugin_list);
             }
+        }
+
+        public static function unresolved_support_fixed_int_request($plugin_feed_url, $hook_url, $plugin_name, $custom_message){
+            libxml_use_internal_errors(true);
+            $plugin_feed = 'https://wordpress.org/support/plugin/'.$plugin_feed_url.'/feed';
+        
+            //$hook_url = $plugin_info->slack_webhook;
+            $custom_message = !empty($custom_message) ? $custom_message : "new support ticket from " . $plugin_name;
+            /**
+             * Checking plugin feed and hook url is not empty
+             */
+            
+            
+            if (!empty($plugin_feed_url) && !empty($hook_url)) {
+                
+                $objXmlDocument = simplexml_load_file($plugin_feed, "SimpleXMLElement", LIBXML_NOCDATA);
+                if ($objXmlDocument === false) {
+                    echo "There were errors parsing the XML file.\n";
+                    foreach (libxml_get_errors() as $error) {
+                        echo $error->message;
+                    }
+                    exit;
+                }
+                $objJsonDocument = json_encode($objXmlDocument);
+                $arrOutput = json_decode($objJsonDocument, true);
+                if (key_exists('item', $arrOutput['channel']) && $objXmlDocument == true) {
+                    $support_item = $arrOutput['channel']['item'];
+                    $total_support_thread = count($support_item);
+                    $new_seq = array();
+                    // Creating new array based on format of slack sending message data
+                    foreach ($support_item as $key => $value) {
+                        
+                        $matches = preg_match_all('/<[^>]*class="[^"]*\bresolved\b[^"]*"[^>]*>/i', $value['title'], $matches);
+                        if (!$matches) {
+                            //write_log($plugin_name);
+                            $sec_array = array();
+                            $sec_array['type'] = 'section';
+                            $sec_array['text']['type'] = 'mrkdwn';
+                            $sec_array['text']['text'] =  ++$key .'. '. strip_tags($value['title']) . '<' . $value['link'] . ''.' | Click here > ' .' ( From '. $plugin_name .' )'.'';
+                            $new_seq[] = $sec_array;
+                        }
+                    }
+                    //write_log($new_seq);
+                
+                    if (!empty($new_seq)) {
+                        $message = array('payload' => json_encode(array(
+                            'text' => $custom_message,
+                            "blocks" =>
+                                $new_seq
+                        )));
+                        $args = array(
+                            'body'        => $message,
+                            'timeout'     => '5',
+                            'redirection' => '5',
+                            'httpversion' => '1.0',
+                            'blocking'    => true,
+                            'headers'     => array(),
+                            'cookies'     => array(),
+                        );
+                        $response = wp_remote_post( $hook_url, $args );
+                    }
+                }
+            }
+        }
+
+        /**
+         * Undocumented function
+         *
+         * @param [type] $atts
+         * @return void
+         */
+        public static function active_install_ratings($atts){
+            require_once( ABSPATH . 'wp-admin/includes/template.php' );
+            require_once(ABSPATH . 'wp-admin/includes/plugin-install.php');
+            $sc_value = shortcode_atts( array(
+                'slug' => ''
+            ), $atts );
+
+            $url 		= 'https://api.wordpress.org/plugins/info/1.0/';
+            $response 	= wp_remote_post($url, array(
+                'body'		=> array(
+                    'action'	=> 'plugin_information',
+                    'request'	=> serialize((object) array(
+                        'slug' => $sc_value['slug'],
+                        'fields'	=> array(
+                            'downloaded'		=> true,
+                            'rating'		=> true,
+                            'ratings' => true,
+                            'description'		=> false,
+                            'short_description' 	=> false,
+                            'donate_link'		=> false,
+                            'tags'			=> false,
+                            'sections'		=> false,
+                            'homepage'		=> false,
+                            'added'			=> false,
+                            'last_updated'		=> false,
+                            'compatibility'		=> false,
+                            'tested'		=> false,
+                            'requires'		=> false,
+                            'downloadlink'		=> false,
+                            'active_installs' => true
+                        )
+                    )),
+                ),
+            ));
+
+            $response = unserialize($response['body']);
+            $args = [
+                'slug' => 'wp-dark-mode',
+                'fields' => [
+                    'short_description' => true,
+                    'icons' => true,
+                    'reviews' => false, // excludes all reviews
+                ],
+            ];
+            $data = plugins_api('plugin_information', $args);
+            //write_log($data);
+            $output = '<div class="active_installations_rating">';
+            $output .= '<div class="active_install">'.$response->active_installs.'+</div>';
+            $output .= '<div class="total_ratings">'.$response->num_ratings.'</div>';
+            $output .= '<div class="vers column-rating">'.wp_star_rating(
+                array(
+                    'rating' => $response->rating,
+                    'type' => 'percent',
+                    'number' => $response->num_ratings,
+                )).'<span class="num-ratings" aria-hidden="true">('. number_format_i18n($response->num_ratings) .')</span></div>';
+            $output .= '</div>';
+            $args = array(
+                'rating' => $response->rating,
+                'type' => 'percent',
+                'number' => $response->num_ratings,
+             );
+             //write_log(wp_star_rating( $args ));
+            
+            return $output;
         }
     }//end class WP Support To Slack

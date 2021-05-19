@@ -33,6 +33,7 @@
 	float: left;
 	width: 67%;
 	margin-top: 6px;
+	margin-left: -63px;
 }
 
 .feed_item_field input[type=text],
@@ -90,7 +91,7 @@ textarea {
 }
 
 .dayexception_item.active {
-	height: 360px;
+	height: 365px;
 }
 
 .dayexception_item .accordion_content {
@@ -151,51 +152,53 @@ textarea {
 }
 
 /*  */
-.switch {
+/* .switch {
 	--line: #E8EBFB;
-	--dot: #275EFE;
+	--dot: #ffffff;
 	--circle: #D3D4EC;
-	--background: #fff;
+	--background: #2271b1;
 	--duration: .3s;
 	--text: #9EA0BE;
 	--shadow: 0 1px 3px rgba(0, 9, 61, 0.08);
 	cursor: pointer;
 	position: relative;
-}
+} */
 
-.feed_item_label .switch:before{
+/* .feed_item_label .switch:before{
 	left: 188px;
     top: -4px;
-}
-.switch:before {
+} */
+/* .switch:before {
 	content: "";
 	width: 60px;
 	height: 32px;
 	border-radius: 16px;
-	background: var(--background);
+	background: var(--circle);
 	position: absolute;
 	left: 0;
 	top: 0;
-	box-shadow: var(--shadow);
-}
+	border: 2px solid #ddc4c4;
+} */
 
-.switch input {
+
+
+/* .switch input {
 	display: none;
-}
+} */
 
-.switch input+div {
+/* .switch input+div {
 	position: relative;
-}
+} */
 
-.switch input+div:before,
+/* .switch input+div:before,
 .switch input+div:after {
 	--s: 1;
-	content: "";
+	content: '';
 	position: absolute;
 	height: 4px;
 	top: 14px;
 	width: 24px;
-	background: var(--line);
+	background: rgb(116, 113, 113);
 	transform: scaleX(var(--s));
 	transition: transform var(--duration) ease;
 }
@@ -221,14 +224,14 @@ textarea {
 
 .switch input+div span:before {
 	--x: 0;
-	--b: var(--circle);
-	--s: 4px;
+	--b: #fff;
+	--s: 14px;
 	content: "";
 	position: absolute;
 	left: 4px;
 	top: 4px;
-	width: 24px;
-	height: 24px;
+	width: 28px;
+    height: 28px;
 	border-radius: 50%;
 	box-shadow: inset 0 0 0 var(--s) var(--b);
 	transform: translateX(var(--x));
@@ -248,10 +251,10 @@ textarea {
 }
 
 .switch input:checked+div span:before {
-	--x: 28px;
-	--s: 12px;
-	--b: var(--dot);
-}
+	--x: 33px;
+    --s: 15px;
+    --b: var(--dot);
+} */
 
 /* Settings page css*/
 .slack-related-plugin-list {
@@ -329,9 +332,6 @@ textarea {
 	font-size: 20px;
 	margin: 0px 0 0 0;
 }
-.product_desc .button{
-	float: right;
-}
 .product_desc .product_landing {
 	cursor: pointer;
 	display: inline-block;
@@ -406,16 +406,160 @@ textarea {
 	font-size: 11px;
 	top: -45px;
 	right: -70px;
+	opacity: 0;
+    transition: opacity 1s;
+}
+.webhook_tooltip .webhook_tooltip_text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 48%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
 }
 
 .webhook_tooltip:hover .webhook_tooltip_text {
 	visibility: visible;
+	opacity: 1;
 }
 .feed_item{
 	height: 60px;
 }
-.switch_after{
+/* .switch_after{
 	float: right;
     margin-top: -2px;
     left: -4px;
+} */
+.view_feat{
+	float: right;
+	text-decoration: underline !important;
 }
+.add_feed .button{
+	background: #ffffff;
+}
+.add_feed .dashicons {
+	font-size: medium
+}
+
+/* Switch */
+.switch {
+	position: relative;
+	display: inline;
+	width: 60px;
+	height: 34px;
+  }
+  
+  .switch input { 
+	opacity: 0;
+	width: 0;
+	height: 0;
+  }
+  .switch_after {
+	position: absolute;
+    cursor: pointer;
+	top: -4px;
+    left: 191px;
+    right: -42px;
+    bottom: -8px;
+    background-color: #F3F1F1;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  .switch_after:before {
+	position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  input:checked + .switch_after {
+	background-color: #2271b1;
+  }
+  
+  input:focus + .switch_after {
+	box-shadow: 0 0 1px #2196F3;
+  }
+  
+  input:checked + .switch_after:before {
+	-webkit-transform: translateX(26px);
+	-ms-transform: translateX(26px);
+	transform: translateX(26px);
+  }
+  
+  /* Rounded sliders */
+  .switch_after {
+	border-radius: 34px;
+  }
+  
+  .switch_after:before {
+	border-radius: 50%;
+  }
+
+/* Settings switch  */
+.settings_switch {
+	position: relative;
+	display: inline-block;
+	width: 60px;
+    height: 34px;
+  }
+  
+  .settings_switch input { 
+	opacity: 0;
+	width: 0;
+	height: 0;
+  }
+  
+  .settings_switch_after {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+	background-color: #F3F1F1;
+	-webkit-transition: .4s;
+	transition: .4s;
+  }
+  
+.settings_switch_after:before {
+	position: absolute;
+	content: "";
+	height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+	background-color: white;
+	-webkit-transition: .4s;
+	transition: .4s;
+  }
+  
+  input:checked + .settings_switch_after {
+	background-color: #2271b1;
+  }
+  
+  input:focus + .settings_switch_after {
+	box-shadow: 0 0 1px #2196F3;
+  }
+  
+  input:checked + .settings_switch_after:before {
+	-webkit-transform: translateX(26px);
+	-ms-transform: translateX(26px);
+	transform: translateX(26px);
+  }
+  
+  /* Rounded sliders */
+  .settings_switch .settings_switch_after {
+	border-radius: 34px;
+  }
+  
+  .settings_switch .settings_switch_after:before {
+	border-radius: 50%;
+  }

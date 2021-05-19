@@ -13,7 +13,7 @@
 
 		//for dayexception field
 		// exceptional field added
-		$('.dayexception_wrapper').on('click', '.add_exception', function (e) {
+		$('.dayexception_wrapper').on('click', '.add_feed', function (e) {
 			e.preventDefault();
 			var $this = $(this);
 			var $name = $this.data('name');
@@ -31,7 +31,7 @@
 
 			var field = '<div class="dayexception_item" style="height: 385px;">' +
 				'<div class="accordion_tab">ID#'+$unique_last_count_val+'<div class="accordion_arrow"><img src="https://i.imgur.com/PJRz0Fc.png" alt="arrow"></div>'+
-			'</div><div class="accordion_content"><div class="feed_item"><div class="feed_item_label"><label for="slack_webhook'+ $unique_last_count_val + '" class="switch">Use Diffrent Webhook<div class="webhook_tooltip">?<span class="webhook_tooltip_text">Which Slack channnel you wnant to send notifications.</span></div><input type="checkbox" class="diffrent_hook" id="slack_webhook'+ $unique_last_count_val + '" name="' + $section + '[' + $name + '][feed][' + $unique_last_count_val + '][global_hook]" value="on" /><div class="switch_after"><span></span></div></label></div><div class="feed_item_field"><input style="display:none" type="text" class="support_slack_webhook" name="' + $section + '[' + $name + '][feed][' + $unique_last_count_val + '][webhook]" placeholder="' + support_to_slack_admin_setting.date + '" class="" id="slack_webhook' + '_' + $unique_last_count_val + '" autocomplete="off" /></div></div>&nbsp;' +
+			'</div><div class="accordion_content"><div class="feed_item"><div class="feed_item_label"><label for="slack_webhook'+ $unique_last_count_val + '" class="switch">Use Diffrent Webhook<div class="webhook_tooltip">?<span class="webhook_tooltip_text">Which Slack channnel you wnant to send notifications.</span></div><input type="checkbox" class="diffrent_hook" id="slack_webhook'+ $unique_last_count_val + '" name="' + $section + '[' + $name + '][feed][' + $unique_last_count_val + '][global_hook]" value="on" /><div class="switch_after"><span></span></div></label></div><div style="margin-top: 42px;" class="feed_item_field"><input style="display:none" type="text" class="support_slack_webhook" name="' + $section + '[' + $name + '][feed][' + $unique_last_count_val + '][webhook]" placeholder="' + support_to_slack_admin_setting.date + '" class="" id="slack_webhook' + '_' + $unique_last_count_val + '" autocomplete="off" /></div></div>&nbsp;' +
 				'<div class="feed_item"><div class="feed_item_label"><label for="plugin_slug' + '_' + $unique_last_count_val + '">Plugin / Theme Link</label></div><div class="feed_item_field"><input type="text" name="' + $section + '[' + $name + '][feed][' + $unique_last_count_val + '][org_link]" placeholder="' + support_to_slack_admin_setting.start + '" class="timepicker timepicker-start" id="plugin_slug' + '_' + $unique_last_count_val + '" autocomplete="off" /></div></div>&nbsp;' +
 				'<div class="feed_item"><div class="feed_item_label"><label for="custom_slack_message' + '_' + $unique_last_count_val + '">Custom Slack Message</label></div><div class="feed_item_field"><textarea name="' + $section + '[' + $name + '][feed][' + $unique_last_count_val + '][message]" placeholder="' + support_to_slack_admin_setting.end + '" class="timepicker timepicker-end" id="custom_slack_message' + '_' + $unique_last_count_val + '" autocomplete="off" rows="4" cols="50" ></textarea></div></div>&nbsp;' +
 				'<a href="#" class="remove_exception button">' + '<span class="dashicons dashicons-trash" style="margin-top: 3px;color: red;"></span>' + support_to_slack_admin_setting.remove + '</a>' +
@@ -52,7 +52,7 @@
 		});
 
 		// Remove all exception rows
-		$('.dayexception_wrapper').on('click', '.removeall_exception', function (e) {
+		$('.dayexception_wrapper').on('click', '.removeall_feed', function (e) {
 			e.preventDefault();
 
 			var $this = $(this);
@@ -155,15 +155,15 @@
 		$(this).addClass("active");
 	});
 	// console.log($unique_last_count_val);
-	$('.dayexception_wrapper').on('click', '.diffrent_hook', function() {
+	$('.dayexception_wrapper').on('click', '.diffrent_hook', function(e) {
 		//console.log('hello');
 		var status = $(this).siblings('.feed_item_field').children('.support_slack_webhook').prop('checked');
 		$(this).siblings('.feed_item_field').children('.support_slack_webhook').prop('checked', !status);
 		if($(this).is(":checked")){
 			//console.log('if');
-			$(this).parent('.switch').parent('.feed_item_label').siblings('.feed_item_field').children(".support_slack_webhook").css("display", "block");
+			$(this).parent('.switch').parent('.feed_item_label').siblings('.feed_item_field').children(".support_slack_webhook").fadeIn()();
 		}else{
-			$(this).parent('.switch').parent('.feed_item_label').siblings('.feed_item_field').children(".support_slack_webhook").css("display", "none");
+			$(this).parent('.switch').parent('.feed_item_label').siblings('.feed_item_field').children(".support_slack_webhook").fadeOut()();
 		}
 			
 	});

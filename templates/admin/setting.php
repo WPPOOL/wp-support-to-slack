@@ -18,7 +18,7 @@
 <!-- This file should primarily consist of HTML with a little bit of PHP. -->
 <div class="wrap">
 	<div class="support_settings_head_sec">
-		<?php echo '<img id="slack_settings_head" src="'.SUPPORT_TO_SLACK_ASSETS.'/images/settings_head.svg" />'; ?><h2><?php esc_html_e( 'WordPress Support To Slack Notification', 'support-to-slack' ); ?></h2>
+		<?php echo '<img id="slack_settings_head" src="'.SUPPORT_TO_SLACK_ASSETS.'/images/settings_head.svg" />'; ?><h2><?php _e( 'WordPress Support To Slack Notification', 'support-to-slack' ); ?></h2>
 	</div>
 	<div id="poststuff">
 		<div id="post-body" class="metabox-holder columns-2">
