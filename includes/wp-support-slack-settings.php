@@ -242,6 +242,16 @@
 			}
 
 			/**
+			 * Displays a documentation section
+			 *
+			 * @param array $args settings field args
+			 */
+			public function callback_doc($args){
+				$html = '<iframe width="420" height="345" src="https://youtube.com/embed/Zs-kUvp5XpY"></iframe>';
+				echo $html;
+			}
+
+			/**
 			 * Displays a date picker as text field for a settings field
 			 *
 			 * @since 1.0.1

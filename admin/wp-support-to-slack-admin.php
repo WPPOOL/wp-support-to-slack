@@ -58,6 +58,7 @@
             add_action('admin_init', array( $this, 'settings_init' ));
             add_action('admin_enqueue_scripts', array( $this, 'enqueue_scripts' ));
             add_action('admin_enqueue_scripts', array( $this, 'enqueue_styles' ));
+            add_action('wp_enqueue_scripts', array( $this, 'frontend_styles' ));
 
             $feed_list = get_option( 'theme_plugin_list');
             if(!empty($feed_list['plugin_theme_feed']) && array_key_exists('feed', $feed_list['plugin_theme_feed'])) {
@@ -70,7 +71,7 @@
             if($notification_settings['enable_download_count'] == 'on'){
                 add_action( 'cron_save_org_downloads', 'WP_To_Slack_Helper::org_daily_download_count' );
             }
-            add_shortcode( 'install_ratings', 'WP_To_Slack_Helper::active_install_ratings' );
+            add_shortcode( 'active-installs', 'WP_To_Slack_Helper::active_install_ratings' );
 
         }
 
@@ -100,8 +101,13 @@
 				wp_enqueue_style( 'wp-color-picker' );
                 wp_enqueue_style('thickbox');
                 wp_enqueue_style('wp-slack-admin-css', plugins_url('../assets/css/admin.css', __FILE__), null, '1.0');
+                
             }
         }//end enqueue_styles
+
+        public function frontend_styles(){
+            wp_enqueue_style('wp-slack-frontend-css', plugins_url('../assets/css/frontend.css', __FILE__), null, '1.0');
+        }
 
         /**
          * Register the JavaScript for the admin area.
@@ -239,7 +245,11 @@
                     ),
                 ),
                 'slack_support_doc'    => array(
-                    
+                    array(
+                        'name' => 'documentation',
+                        'label' => '',
+                        'type' => 'doc',
+                    )
                 )
             );
 

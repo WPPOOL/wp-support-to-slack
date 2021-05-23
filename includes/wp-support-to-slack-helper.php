@@ -473,69 +473,102 @@
          * @param [type] $atts
          * @return void
          */
-        public static function active_install_ratings($atts){
+        public static function active_installs($atts){
             require_once( ABSPATH . 'wp-admin/includes/template.php' );
             require_once(ABSPATH . 'wp-admin/includes/plugin-install.php');
             $sc_value = shortcode_atts( array(
                 'slug' => ''
             ), $atts );
-
-            $url 		= 'https://api.wordpress.org/plugins/info/1.0/';
-            $response 	= wp_remote_post($url, array(
-                'body'		=> array(
-                    'action'	=> 'plugin_information',
-                    'request'	=> serialize((object) array(
-                        'slug' => $sc_value['slug'],
-                        'fields'	=> array(
-                            'downloaded'		=> true,
-                            'rating'		=> true,
-                            'ratings' => true,
-                            'description'		=> false,
-                            'short_description' 	=> false,
-                            'donate_link'		=> false,
-                            'tags'			=> false,
-                            'sections'		=> false,
-                            'homepage'		=> false,
-                            'added'			=> false,
-                            'last_updated'		=> false,
-                            'compatibility'		=> false,
-                            'tested'		=> false,
-                            'requires'		=> false,
-                            'downloadlink'		=> false,
-                            'active_installs' => true
-                        )
-                    )),
-                ),
-            ));
-
-            $response = unserialize($response['body']);
+            ob_start();
             $args = [
-                'slug' => 'wp-dark-mode',
+                'slug' => $sc_value['slug'],
                 'fields' => [
-                    'short_description' => true,
+                    'short_description' => false,
                     'icons' => true,
                     'reviews' => false, // excludes all reviews
                 ],
             ];
             $data = plugins_api('plugin_information', $args);
             //write_log($data);
-            $output = '<div class="active_installations_rating">';
-            $output .= '<div class="active_install">'.$response->active_installs.'+</div>';
-            $output .= '<div class="total_ratings">'.$response->num_ratings.'</div>';
-            $output .= '<div class="vers column-rating">'.wp_star_rating(
+            ?>
+            <div class="active_installations_rating">
+            <div class="active_install"><?php echo $data->active_installs ?>+</div>
+            <div class="vers column-rating"><span>Active Installs | </span><?php 
+            wp_star_rating(
                 array(
-                    'rating' => $response->rating,
+                    'rating' => $data->rating,
                     'type' => 'percent',
-                    'number' => $response->num_ratings,
-                )).'<span class="num-ratings" aria-hidden="true">('. number_format_i18n($response->num_ratings) .')</span></div>';
-            $output .= '</div>';
-            $args = array(
-                'rating' => $response->rating,
+                    'number' => $data->num_ratings,
+            ));?>
+            </div>
+            <?php
+                $defaults    = array(
+                    'rating' => 0,
+                    'type'   => 'percent',
+                    'number' => 0,
+                    'echo'   => true,
+                );
+                $rating_args = array(
+                    'rating' => $data->rating,
+                    'type' => 'percent',
+                    'number' => $data->num_ratings,
+                );
+                $parsed_args = wp_parse_args( $rating_args, $defaults );
+             
+                // Non-English decimal places when the $rating is coming from a string.
+                $rating = (float) str_replace( ',', '.', $parsed_args['rating'] );
+                
+                // Convert percentage to star rating, 0..5 in .5 increments.
+                if ( 'percent' === $parsed_args['type'] ) {
+                    $rating = round( $rating / 10, 1 ) / 2;
+                }
+                //write_log($rating);
+                // Calculate the number of each type of star needed.
+                // $full_stars  = round( $rating );
+                // $half_stars  = ceil( $rating - $full_stars );
+                // $empty_stars = 5 - $full_stars - $half_stars;
+             
+                // if ( $parsed_args['number'] ) {
+                //     /* translators: 1: The rating, 2: The number of ratings. */
+                //     $format = _n( '%1$s rating out of  5 stars', '%1$s rating out of 5 stars', $parsed_args['number'] );
+                //     $title  = sprintf( $format, number_format_i18n( $rating, 1 ), number_format_i18n( $parsed_args['number'] ) );
+                // } else {
+                //     /* translators: %s: The rating. */
+                //     $title = sprintf( __( '%s rating' ), number_format_i18n( $rating, 1 ) );
+                // }
+                write_log($rating);
+                echo '<div class="rating_msg">('.$title.')</div>';
+
+            ?>
+            <?php
+
+            $output_string = ob_get_contents();
+            ob_end_clean();
+            return $output_string;
+            wp_reset_postdata();
+        }
+
+        public function rating_numbers($atts){
+            $defaults    = array(
+                'rating' => 0,
+                'type'   => 'percent',
+                'number' => 0,
+                'echo'   => true,
+            );
+            $rating_args = array(
+                'rating' => $data->rating,
                 'type' => 'percent',
-                'number' => $response->num_ratings,
-             );
-             //write_log(wp_star_rating( $args ));
+                'number' => $data->num_ratings,
+            );
+            $parsed_args = wp_parse_args( $rating_args, $defaults );
+         
+            // Non-English decimal places when the $rating is coming from a string.
+            $rating = (float) str_replace( ',', '.', $parsed_args['rating'] );
             
-            return $output;
+            // Convert percentage to star rating, 0..5 in .5 increments.
+            if ( 'percent' === $parsed_args['type'] ) {
+                $rating = round( $rating / 10, 1 ) / 2;
+            }
+            return $rating;
         }
     }//end class WP Support To Slack
