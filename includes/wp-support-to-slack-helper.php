@@ -129,13 +129,10 @@
             } elseif ($plugin_or_theme == 'plugin') {
                 
             } */
-            // write_log($hook_url);
-            // write_log($plugin_name);
 
             libxml_use_internal_errors(true);
             $plugin_feed = 'https://wordpress.org/support/plugin/'.$plugin_feed_url.'/feed';
         
-            //$hook_url = $plugin_info->slack_webhook;
             $custom_message = !empty($custom_message) ? $custom_message : "new support ticket from " . $plugin_name;
             /**
              * Checking plugin feed and hook url is not empty
@@ -255,27 +252,48 @@
                     
                     $rating_list = array();
                     $saved_rating = !empty(get_option('saved_rating')) ? get_option('saved_rating') : array();
-                    //write_log($reviews_item);
                     
-                    //write_log(get_option($plugin_feed_url));
-                    foreach ($reviews_item  as $key => $value) {
-                        $str = $value['description'];
-                        if (preg_match_all('/Rating:(.*?)star/', $str, $match)) {
+                    if(is_array($reviews_item[0])){
+                        foreach ($reviews_item  as $key => $value) {
                             //write_log($value);
-                            if (floatval($match[1][0]) == true) {
-                                if(in_array(strtotime($value['pubDate']), $saved_rating)){
-                                    break;
+                            $str = $value['description'];
+                            if (preg_match_all('/Rating:(.*?)star/', $str, $match)) {
+                                //write_log($value);
+                                if (floatval($match[1][0]) == true) {
+                                    if(in_array(strtotime($value['pubDate']), $saved_rating)){
+                                        break;
+                                    }
+                                    $rating_list[] = strtotime($value['pubDate']);
+                                    $first_install = get_option($plugin_feed_url);
+                                    /* if(!isset($first_install)){
+                                        break;
+                                    } */
+                                    echo '<p>hello you got another '.str_repeat(":star:", floatval($match[1][0])) .' star review. Details: '. $value['link'];
+                                    $sec_array = array();
+                                    $sec_array['type'] = 'section';
+                                    $sec_array['text']['type'] = 'mrkdwn';
+                                    $sec_array['text']['text'] =  ++$key .'. '. 'Hello you got another '.str_repeat(":star:", floatval($match[1][0])) .' star review. '.$plugin_name.': '. $value['link'];
+                                    
+                                    if(!empty($first_install)){
+                                        $rating_arr[] = $sec_array;
+                                    }
                                 }
-                                $rating_list[] = strtotime($value['pubDate']);
+                            }
+                        }
+                    }else{
+                        $str = $reviews_item['description'];
+                        if (preg_match_all('/Rating:(.*?)star/', $str, $match)) {
+                            if (floatval($match[1][0]) == true) {
+                                if(in_array(strtotime($reviews_item['pubDate']), $saved_rating)){
+                                    return false;
+                                }
+                                $rating_list[] = strtotime($reviews_item['pubDate']);
                                 $first_install = get_option($plugin_feed_url);
-                                /* if(!isset($first_install)){
-                                    break;
-                                } */
-                                echo '<p>hello you got another '.str_repeat(":star:", floatval($match[1][0])) .' star review. Details: '. $value['link'];
+                                echo '<p>hello you got another '.str_repeat(":star:", floatval($match[1][0])) .' star review. Details: '. $reviews_item['link'];
                                 $sec_array = array();
                                 $sec_array['type'] = 'section';
                                 $sec_array['text']['type'] = 'mrkdwn';
-                                $sec_array['text']['text'] =  ++$key .'. '. 'Hello you got another '.str_repeat(":star:", floatval($match[1][0])) .' star review. '.$plugin_name.': '. $value['link'];
+                                $sec_array['text']['text'] =  ++$key .'. '. 'Hello you got another '.str_repeat(":star:", floatval($match[1][0])) .' star review. '.$plugin_name.': '. $reviews_item['link'];
                                 
                                 if(!empty($first_install)){
                                     $rating_arr[] = $sec_array;
@@ -283,6 +301,7 @@
                             }
                         }
                     }
+                    
 
                     update_option( $plugin_feed_url, 111);
                     $rating_list = array_merge($rating_list, $saved_rating);
