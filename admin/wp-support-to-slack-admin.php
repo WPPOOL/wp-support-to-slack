@@ -71,7 +71,8 @@
             if($notification_settings['enable_download_count'] == 'on'){
                 add_action( 'cron_save_org_downloads', 'WP_To_Slack_Helper::org_daily_download_count' );
             }
-            add_shortcode( 'active-installs', 'WP_To_Slack_Helper::active_install_ratings' );
+            add_shortcode( 'active-installs', 'WP_To_Slack_Helper::active_installs' );
+            add_shortcode( 'rating-number', 'WP_To_Slack_Helper::rating_numbers' );
 
         }
 

@@ -247,7 +247,7 @@
 			 * @param array $args settings field args
 			 */
 			public function callback_doc($args){
-				$html = '<iframe width="420" height="345" src="https://youtube.com/embed/Zs-kUvp5XpY"></iframe>';
+				$html = '<iframe width="600" height="400" src="https://youtube.com/embed/Zs-kUvp5XpY"></iframe>';
 				echo $html;
 			}
 

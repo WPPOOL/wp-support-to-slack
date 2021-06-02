@@ -346,7 +346,7 @@
         public static function org_daily_download_count($plugin_list = array()) {
             require_once(ABSPATH . 'wp-admin/includes/plugin-install.php');
 
-            $plugin_info = plugins_api('plugin_information', array( 'slug' => 'wp-dark-mode' ));
+            //$plugin_info = plugins_api('plugin_information', array( 'slug' => 'wp-dark-mode' ));
             $downloaded =  get_option('total_downloaded');
             $download_count = get_option('enable_download_count');
             $count_report_hook = get_option('slack_support_settings');
@@ -479,7 +479,6 @@
             $sc_value = shortcode_atts( array(
                 'slug' => ''
             ), $atts );
-            ob_start();
             $args = [
                 'slug' => $sc_value['slug'],
                 'fields' => [
@@ -489,66 +488,23 @@
                 ],
             ];
             $data = plugins_api('plugin_information', $args);
-            //write_log($data);
-            ?>
-            <div class="active_installations_rating">
-            <div class="active_install"><?php echo $data->active_installs ?>+</div>
-            <div class="vers column-rating"><span>Active Installs | </span><?php 
-            wp_star_rating(
-                array(
-                    'rating' => $data->rating,
-                    'type' => 'percent',
-                    'number' => $data->num_ratings,
-            ));?>
-            </div>
-            <?php
-                $defaults    = array(
-                    'rating' => 0,
-                    'type'   => 'percent',
-                    'number' => 0,
-                    'echo'   => true,
-                );
-                $rating_args = array(
-                    'rating' => $data->rating,
-                    'type' => 'percent',
-                    'number' => $data->num_ratings,
-                );
-                $parsed_args = wp_parse_args( $rating_args, $defaults );
-             
-                // Non-English decimal places when the $rating is coming from a string.
-                $rating = (float) str_replace( ',', '.', $parsed_args['rating'] );
-                
-                // Convert percentage to star rating, 0..5 in .5 increments.
-                if ( 'percent' === $parsed_args['type'] ) {
-                    $rating = round( $rating / 10, 1 ) / 2;
-                }
-                //write_log($rating);
-                // Calculate the number of each type of star needed.
-                // $full_stars  = round( $rating );
-                // $half_stars  = ceil( $rating - $full_stars );
-                // $empty_stars = 5 - $full_stars - $half_stars;
-             
-                // if ( $parsed_args['number'] ) {
-                //     /* translators: 1: The rating, 2: The number of ratings. */
-                //     $format = _n( '%1$s rating out of  5 stars', '%1$s rating out of 5 stars', $parsed_args['number'] );
-                //     $title  = sprintf( $format, number_format_i18n( $rating, 1 ), number_format_i18n( $parsed_args['number'] ) );
-                // } else {
-                //     /* translators: %s: The rating. */
-                //     $title = sprintf( __( '%s rating' ), number_format_i18n( $rating, 1 ) );
-                // }
-                write_log($rating);
-                echo '<div class="rating_msg">('.$title.')</div>';
-
-            ?>
-            <?php
-
-            $output_string = ob_get_contents();
-            ob_end_clean();
-            return $output_string;
-            wp_reset_postdata();
+            return $data->active_installs;
         }
-
-        public function rating_numbers($atts){
+        public static function rating_numbers($atts){
+            require_once( ABSPATH . 'wp-admin/includes/template.php' );
+            require_once(ABSPATH . 'wp-admin/includes/plugin-install.php');
+            $sc_value = shortcode_atts( array(
+                'slug' => ''
+            ), $atts );
+            $args = [
+                'slug' => $sc_value['slug'],
+                'fields' => [
+                    'short_description' => false,
+                    'icons' => true,
+                    'reviews' => false, // excludes all reviews
+                ],
+            ];
+            $data = plugins_api('plugin_information', $args);
             $defaults    = array(
                 'rating' => 0,
                 'type'   => 'percent',
@@ -561,7 +517,7 @@
                 'number' => $data->num_ratings,
             );
             $parsed_args = wp_parse_args( $rating_args, $defaults );
-         
+            
             // Non-English decimal places when the $rating is coming from a string.
             $rating = (float) str_replace( ',', '.', $parsed_args['rating'] );
             
@@ -569,6 +525,6 @@
             if ( 'percent' === $parsed_args['type'] ) {
                 $rating = round( $rating / 10, 1 ) / 2;
             }
-            return $rating;
+            return $rating; 
         }
     }//end class WP Support To Slack
