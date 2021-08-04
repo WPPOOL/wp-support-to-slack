@@ -158,6 +158,7 @@
 				wp_enqueue_script( 'wp-color-picker');
                 wp_enqueue_script('thickbox'); 
                 wp_enqueue_script('support_to_slack_admin');
+
             }
         }//end enqueue_scripts
 
@@ -165,14 +166,16 @@
          * This admin_menu method will create options page
          */
         public function create_admin_menu(){
+
             add_menu_page(
-                __('WordPress Support To Slack', 'wpdocs-webnail-modules'),
-                __('WP To Slack', 'wpdocs-webnail-modules'),
+                __('WordPress Support To Slack', 'support-to-slack'),
+                __('WP To Slack', 'support-to-slack'),
                 'manage_options',
                 'wp-support-to-slack-page',
                 array( $this, 'support_to_slack_fields' ),
                 'dashicons-superhero'
             );
+
         }// end of admin_menu method
 
         /**

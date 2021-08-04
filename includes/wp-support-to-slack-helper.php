@@ -20,7 +20,6 @@
             if (is_array($feeds) && sizeof($feeds) > 0) {
                 $exceptions = isset($feeds['plugin_theme_feed']) ? $feeds['plugin_theme_feed'] : array();
             }
-            //write_log($feeds);
 
             $feed_list = get_option( 'theme_plugin_list');
             if( isset($feed_list['plugin_theme_feed']['feed'])){
@@ -124,12 +123,6 @@
          */
         public static function support_to_slack_msg_request($plugin_feed_url, $hook_url, $plugin_name, $custom_message) {
 
-            /* if ($plugin_or_theme == 'theme') {
-                $plugin_feed = 'https://wordpress.org/support/theme/'.$plugin_feed_url.'/feed';
-            } elseif ($plugin_or_theme == 'plugin') {
-                
-            } */
-
             libxml_use_internal_errors(true);
             $plugin_feed = 'https://wordpress.org/support/plugin/'.$plugin_feed_url.'/feed';
         
@@ -156,47 +149,86 @@
                     // Creating new array based on format of slack sending message data
                     $new_array = array();
                     $saved_list = !empty(get_option('saved_thread')) ? get_option('saved_thread') : array();
-                    //write_log($plugin_name);
-                    foreach ($support_item as $key => $value) {
+                    //write_log($support_item);
+                    if(isset($support_item[0]) && is_array($support_item[0])){
+                        foreach ($support_item as $key => $value) {
                         
-                        $matches = preg_match_all('/<[^>]*class="[^"]*\bresolved\b[^"]*"[^>]*>/i', $value['title'], $matches);
-                        if (!$matches) {
-                            $thread_slug = basename($value['link']);
-                            
-                            $single_thread_feed = 'https://wordpress.org/support/topic/'.$thread_slug.'/feed';
-                            $objXmlthread = simplexml_load_file($single_thread_feed, "SimpleXMLElement", LIBXML_NOCDATA);
-                            if ($objXmlthread === false) {
-                                echo "There were errors parsing the XML file.\n";
-                                foreach (libxml_get_errors() as $error) {
-                                    echo $error->message;
-                                }
-                                exit;
-                            }
-                            $objJsonthread = json_encode($objXmlthread);
-                            $thread_feed = json_decode($objJsonthread, true);
-                            
-                            if(isset($thread_feed['channel']['item'][0]) && is_array($thread_feed['channel']['item'][0])){
-                                foreach ($thread_feed['channel']['item'] as $single_reply) {
-                                    if(in_array(strtotime($single_reply['pubDate']), $saved_list)){
-                                        break;
+                            $matches = preg_match_all('/<[^>]*class="[^"]*\bresolved\b[^"]*"[^>]*>/i', $value['title'], $matches);
+                            if (!$matches) {
+                                $thread_slug = basename($value['link']);
+                                
+                                $single_thread_feed = 'https://wordpress.org/support/topic/'.$thread_slug.'/feed';
+                                $objXmlthread = simplexml_load_file($single_thread_feed, "SimpleXMLElement", LIBXML_NOCDATA);
+                                if ($objXmlthread === false) {
+                                    echo "There were errors parsing the XML file.\n";
+                                    foreach (libxml_get_errors() as $error) {
+                                        echo $error->message;
                                     }
-                                    $new_array[] = strtotime($single_reply['pubDate']);
+                                    exit;
                                 }
+                                $objJsonthread = json_encode($objXmlthread);
+                                $thread_feed = json_decode($objJsonthread, true);
+                                
+                                if(isset($thread_feed['channel']['item'][0]) && is_array($thread_feed['channel']['item'][0])){
+                                    foreach ($thread_feed['channel']['item'] as $single_reply) {
+                                        if(in_array(strtotime($single_reply['pubDate']), $saved_list)){
+                                            break;
+                                        }
+                                        $new_array[] = strtotime($single_reply['pubDate']);
+                                    }
+                                }
+    
+                                if(in_array(strtotime($value['pubDate']), $saved_list)){
+                                    break;
+                                }
+                                $new_array[] = strtotime($value['pubDate']);
+    
+                                $sec_array = array();
+                                $sec_array['type'] = 'section';
+                                $sec_array['text']['type'] = 'mrkdwn';
+                                $sec_array['text']['text'] =  ++$key .'. '. strip_tags($value['title']) . '<' . $value['link'] . ''.' | Click here > ' .' ( From '. $plugin_name .' )'.'';
+                                $new_seq[] = $sec_array;
                             }
-
-                            if(in_array(strtotime($value['pubDate']), $saved_list)){
-                                break;
-                            }
-                            $new_array[] = strtotime($value['pubDate']);
-
-                            $sec_array = array();
-                            $sec_array['type'] = 'section';
-                            $sec_array['text']['type'] = 'mrkdwn';
-                            $sec_array['text']['text'] =  ++$key .'. '. strip_tags($value['title']) . '<' . $value['link'] . ''.' | Click here > ' .' ( From '. $plugin_name .' )'.'';
-                            $new_seq[] = $sec_array;
                         }
+                    }else{
+                            $matches = preg_match_all('/<[^>]*class="[^"]*\bresolved\b[^"]*"[^>]*>/i', $support_item['title'], $matches);
+                            if (!$matches) {
+                                $thread_slug = basename($support_item['link']);
+                                
+                                $single_thread_feed = 'https://wordpress.org/support/topic/'.$thread_slug.'/feed';
+                                $objXmlthread = simplexml_load_file($single_thread_feed, "SimpleXMLElement", LIBXML_NOCDATA);
+                                if ($objXmlthread === false) {
+                                    echo "There were errors parsing the XML file.\n";
+                                    foreach (libxml_get_errors() as $error) {
+                                        echo $error->message;
+                                    }
+                                    exit;
+                                }
+                                $objJsonthread = json_encode($objXmlthread);
+                                $thread_feed = json_decode($objJsonthread, true);
+                                
+                                if(isset($thread_feed['channel']['item'][0]) && is_array($thread_feed['channel']['item'][0])){
+                                    foreach ($thread_feed['channel']['item'] as $single_reply) {
+                                        if(in_array(strtotime($single_reply['pubDate']), $saved_list)){
+                                            break;
+                                        }
+                                        $new_array[] = strtotime($single_reply['pubDate']);
+                                    }
+                                }
+    
+                                if(in_array(strtotime($support_item['pubDate']), $saved_list)){
+                                    return false;
+                                }
+                                $new_array[] = strtotime($support_item['pubDate']);
+    
+                                $sec_array = array();
+                                $sec_array['type'] = 'section';
+                                $sec_array['text']['type'] = 'mrkdwn';
+                                $sec_array['text']['text'] =  ++$key .'. '. strip_tags($support_item['title']) . '<' . $support_item['link'] . ''.' | Click here > ' .' ( From '. $plugin_name .' )'.'';
+                                $new_seq[] = $sec_array;
+                            }
                     }
-                    
+
                     $new_array = array_merge($new_array, $saved_list);
                     $new_array = array_unique($new_array);
                     update_option('saved_thread',  $new_array);
@@ -265,10 +297,8 @@
                                     }
                                     $rating_list[] = strtotime($value['pubDate']);
                                     $first_install = get_option($plugin_feed_url);
-                                    /* if(!isset($first_install)){
-                                        break;
-                                    } */
-                                    echo '<p>hello you got another '.str_repeat(":star:", floatval($match[1][0])) .' star review. Details: '. $value['link'];
+
+                                    echo '<p>Hello you got another '.str_repeat(":star:", floatval($match[1][0])) .' star review. Details: '. $value['link'];
                                     $sec_array = array();
                                     $sec_array['type'] = 'section';
                                     $sec_array['text']['type'] = 'mrkdwn';
@@ -289,7 +319,7 @@
                                 }
                                 $rating_list[] = strtotime($reviews_item['pubDate']);
                                 $first_install = get_option($plugin_feed_url);
-                                echo '<p>hello you got another '.str_repeat(":star:", floatval($match[1][0])) .' star review. Details: '. $reviews_item['link'];
+                                /* echo '<p>hello you got another '.str_repeat(":star:", floatval($match[1][0])) .' star review. Details: '. $reviews_item['link']; */
                                 $sec_array = array();
                                 $sec_array['type'] = 'section';
                                 $sec_array['text']['type'] = 'mrkdwn';
@@ -327,8 +357,6 @@
                     }
                 }
             }
-
-            //}
         }
 
         public static function get_plugin_downloads($plugin_slug) {
