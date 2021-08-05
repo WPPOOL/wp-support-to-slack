@@ -86,10 +86,9 @@
 
                         $global_hook = get_option('slack_support_settings');
                         $hook_type = !empty( $single_feed['global_hook'] ) && $single_feed['global_hook'] == 'on' ? $global_hook['download_webhook'] : $single_feed['webhook'];
-                        //write_log($single_feed['webhook']);
-
                         $plugin_info = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
                         $plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
+
                         wp_schedule_event(time(), $recurrence, 'support_to_slack_event_'.$key.'', array(
                             'plugin_feed_url' => $slug,
                             'slack_webhook' => $hook_type,
@@ -458,8 +457,6 @@
             /**
              * Checking plugin feed and hook url is not empty
              */
-            
-            
             if (!empty($plugin_feed_url) && !empty($hook_url)) {
                 
                 $objXmlDocument = simplexml_load_file($plugin_feed, "SimpleXMLElement", LIBXML_NOCDATA);
@@ -477,8 +474,8 @@
                     $total_support_thread = count($support_item);
                     $new_seq = array();
                     // Creating new array based on format of slack sending message data
+                    if(isset($support_item[0]) && is_array($support_item[0])){
                     foreach ($support_item as $key => $value) {
-                        
                         $matches = preg_match_all('/<[^>]*class="[^"]*\bresolved\b[^"]*"[^>]*>/i', $value['title'], $matches);
                         if (!$matches) {
                             //write_log($plugin_name);
@@ -489,7 +486,17 @@
                             $new_seq[] = $sec_array;
                         }
                     }
-                    //write_log($new_seq);
+                    }else{
+                        $matches = preg_match_all('/<[^>]*class="[^"]*\bresolved\b[^"]*"[^>]*>/i', $support_item['title'], $matches);
+                        if (!$matches) {
+                            //write_log($plugin_name);
+                            $sec_array = array();
+                            $sec_array['type'] = 'section';
+                            $sec_array['text']['type'] = 'mrkdwn';
+                            $sec_array['text']['text'] = strip_tags($support_item['title']) . '<' . $support_item['link'] . ''.' | Click here > ' .' ( From '. $plugin_name .' )'.'';
+                            $new_seq[] = $sec_array;
+                        }
+                    }
                 
                     if (!empty($new_seq)) {
                         $message = array('payload' => json_encode(array(
