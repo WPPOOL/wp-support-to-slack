@@ -285,7 +285,8 @@
                     $rating_list = array();
                     $saved_rating = !empty(get_option('saved_rating')) ? get_option('saved_rating') : array();
                     
-                    if(is_array($reviews_item[0])){
+                    //write_log($reviews_item[0]);
+                    if(!empty($reviews_item[0])){
                         foreach ($reviews_item  as $key => $value) {
                             //write_log($value);
                             $str = $value['description'];
@@ -311,6 +312,7 @@
                             }
                         }
                     }else{
+                        //write_log($reviews_item);
                         $str = $reviews_item['description'];
                         if (preg_match_all('/Rating:(.*?)star/', $str, $match)) {
                             if (floatval($match[1][0]) == true) {
@@ -397,11 +399,13 @@
             $downloaded =  get_option('total_downloaded');
             $download_count = get_option('enable_download_count');
             $count_report_hook = get_option('slack_support_settings');
+            //write_log('boro kore download');
 
 
             $plugin_list = array();
             $feed_list = get_option( 'theme_plugin_list');
             if ($count_report_hook['enable_download_count'] == 'on') {
+                //write_log('choto kore download');
                 foreach ($feed_list['plugin_theme_feed']['feed'] as $key => $value) {
                     $slug = basename($value['org_link']);
                     $plugin_list[$slug] = self::get_plugin_downloads($slug);
@@ -428,6 +432,7 @@
                     $new_seq[] = $sec_array;
                     $i++;
                 }
+                write_log($count_report_hook['download_webhook']);
 
                 if (!empty($new_seq)) {
                     $message = array('payload' => json_encode(array(
@@ -444,7 +449,7 @@
                         'headers'     => array(),
                         'cookies'     => array(),
                     );
-                    $response = wp_remote_post( $hook_url, $args );
+                    $response = wp_remote_post( $count_report_hook['download_webhook'], $args );
                     // Use curl to send your message
                 }
                 update_option('total_downloaded', $plugin_list);
