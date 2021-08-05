@@ -255,7 +255,6 @@
             
             $rating_notification = get_option('slack_support_settings');
             if (!empty($rating_notification['enable_rating'] == 'on') && !empty($plugin_feed_url)) {
-                //write_log('kedu');
                 libxml_use_internal_errors(true);
                 /* if ($plugin_or_theme == 'theme') {
                     $wp_review_feed = 'https://wordpress.org/support/theme/'.$plugin_feed_url.'/reviews/feed';
@@ -277,7 +276,6 @@
                 if(array_key_exists('item', $arrOutputReview['channel']) && is_array($arrOutputReview['channel']['item']) && !empty($arrOutputReview['channel']['item'])){
 
                     $reviews_item = $arrOutputReview['channel']['item'];
-                    //write_log(count($reviews_item));
                     $yesterday_rating = !empty(get_option('total_rating'))? get_option('total_rating') : count($reviews_item);
                     
                     $rating_arr = array();
@@ -285,13 +283,10 @@
                     $rating_list = array();
                     $saved_rating = !empty(get_option('saved_rating')) ? get_option('saved_rating') : array();
                     
-                    //write_log($reviews_item[0]);
                     if(!empty($reviews_item[0])){
                         foreach ($reviews_item  as $key => $value) {
-                            //write_log($value);
                             $str = $value['description'];
                             if (preg_match_all('/Rating:(.*?)star/', $str, $match)) {
-                                //write_log($value);
                                 if (floatval($match[1][0]) == true) {
                                     if(in_array(strtotime($value['pubDate']), $saved_rating)){
                                         break;
@@ -312,7 +307,6 @@
                             }
                         }
                     }else{
-                        //write_log($reviews_item);
                         $str = $reviews_item['description'];
                         if (preg_match_all('/Rating:(.*?)star/', $str, $match)) {
                             if (floatval($match[1][0]) == true) {
@@ -432,7 +426,6 @@
                     $new_seq[] = $sec_array;
                     $i++;
                 }
-                write_log($count_report_hook['download_webhook']);
 
                 if (!empty($new_seq)) {
                     $message = array('payload' => json_encode(array(
