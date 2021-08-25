@@ -160,6 +160,7 @@ final class WPSupportToSlack {
                
                 $schedules['every_12'] = array('interval' => 60 * 60 * 12,  'display' => 'Daily');
                 $schedules['daily_count'] = array('interval' => 60 * 60 * 24,  'display' => 'Daily');
+                $schedules['weekly_count'] = array('interval' => 60 * 60 * 24 * 7,  'display' => 'Weekly');
                 $schedules['minute_count'] = array('interval' => 60,  'display' => 'Daily');
             }
             return $schedules;

@@ -38,19 +38,18 @@
                 foreach ($feeds['feed'] as $key => $single_feed) {
                     if (!empty($interval) && !empty($recurrence) && !wp_next_scheduled('support_to_slack_event_'.$key.'')) {
                         $slug = basename($single_feed['org_link']);
-                        //write_log($single_feed);
                         $global_hook = get_option('slack_support_settings');
                         $hook_type = $single_feed['global_hook'] == 'on' ? $single_feed['webhook'] : $global_hook['download_webhook'];
                         
                         $plugin_info = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
-                        $plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
+                        $plugin_name   = isset($plugin_info->name) ? html_entity_decode($plugin_info->name) : '';
                         wp_schedule_event(time(), $recurrence, 'support_to_slack_event_'.$key.'', array(
                             'plugin_feed_url' => $slug,
                             'slack_webhook' => $hook_type,
                             'plugin_name' => $plugin_name,
                             'custom_message' => $single_feed['message'],
                         ));
-                        wp_schedule_event(time(), 'every_12', 'unresolved_support_interval_'.$key.'', array(
+                        wp_schedule_event(time(), 'weekly_count', 'unresolved_support_interval_'.$key.'', array(
                             'plugin_feed_url' => $slug,
                             'slack_webhook' => $hook_type,
                             'plugin_name' => $plugin_name,
@@ -80,14 +79,13 @@
                 $recurrence = $cron_settings['interval_recurrence']['recurrence'];
                 $interval = $cron_settings['interval_recurrence']['interval'];
                 foreach ($feed_list['plugin_theme_feed']['feed'] as $key => $single_feed) {
-                    //write_log($recurrence);
                     if (!empty($interval) && !empty($recurrence) && !wp_next_scheduled('support_to_slack_event_'.$key.'')) {
                         $slug = basename($single_feed['org_link']);
 
                         $global_hook = get_option('slack_support_settings');
                         $hook_type = !empty( $single_feed['global_hook'] ) && $single_feed['global_hook'] == 'on' ? $global_hook['download_webhook'] : $single_feed['webhook'];
                         $plugin_info = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
-                        $plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
+                        $plugin_name   = isset($plugin_info->name) ? ($plugin_info->name) : '';
 
                         wp_schedule_event(time(), $recurrence, 'support_to_slack_event_'.$key.'', array(
                             'plugin_feed_url' => $slug,
@@ -96,7 +94,7 @@
                             'custom_message' => $single_feed['message'],
                         ));
 
-                        wp_schedule_event(time(), 'every_12', 'unresolved_support_interval_'.$key.'', array(
+                        wp_schedule_event(time(), 'weekly_count', 'unresolved_support_interval_'.$key.'', array(
                             'plugin_feed_url' => $slug,
                             'slack_webhook' => $hook_type,
                             'plugin_name' => $plugin_name,
@@ -148,7 +146,6 @@
                     // Creating new array based on format of slack sending message data
                     $new_array = array();
                     $saved_list = !empty(get_option('saved_thread')) ? get_option('saved_thread') : array();
-                    //write_log($support_item);
                     if(isset($support_item[0]) && is_array($support_item[0])){
                         foreach ($support_item as $key => $value) {
                         
@@ -185,7 +182,7 @@
                                 $sec_array = array();
                                 $sec_array['type'] = 'section';
                                 $sec_array['text']['type'] = 'mrkdwn';
-                                $sec_array['text']['text'] =  ++$key .'. '. strip_tags($value['title']) . '<' . $value['link'] . ''.' | Click here > ' .' ( From '. $plugin_name .' )'.'';
+                                $sec_array['text']['text'] =  ++$key .'. '. strip_tags(html_entity_decode($value['title'])) . '<' . $value['link'] . ''.' | Click here > ' .' ( From '. $plugin_name .' )'.'';
                                 $new_seq[] = $sec_array;
                             }
                         }
@@ -223,7 +220,7 @@
                                 $sec_array = array();
                                 $sec_array['type'] = 'section';
                                 $sec_array['text']['type'] = 'mrkdwn';
-                                $sec_array['text']['text'] =  ++$key .'. '. strip_tags($support_item['title']) . '<' . $support_item['link'] . ''.' | Click here > ' .' ( From '. $plugin_name .' )'.'';
+                                $sec_array['text']['text'] =  ++$key .'. '. strip_tags(html_entity_decode($support_item['title'])) . '<' . $support_item['link'] . ''.' | Click here > ' .' ( From '. $plugin_name .' )'.'';
                                 $new_seq[] = $sec_array;
                             }
                     }
@@ -355,50 +352,28 @@
         }
 
         public static function get_plugin_downloads($plugin_slug) {
-            $url 		= 'https://api.wordpress.org/plugins/info/1.0/';
+            $url 		= 'https://api.wordpress.org/stats/plugin/1.0/downloads.php?slug='.$plugin_slug.'/';
+            
             $response 	= wp_remote_post($url, array(
                 'body'		=> array(
-                    'action'	=> 'plugin_information',
-                    'request'	=> serialize((object) array(
-                        'slug' => $plugin_slug,
-                        'fields'	=> array(
-                            'downloaded'		=> true,
-                            'rating'		=> false,
-                            'description'		=> false,
-                            'short_description' 	=> false,
-                            'donate_link'		=> false,
-                            'tags'			=> false,
-                            'sections'		=> false,
-                            'homepage'		=> false,
-                            'added'			=> false,
-                            'last_updated'		=> false,
-                            'compatibility'		=> false,
-                            'tested'		=> false,
-                            'requires'		=> false,
-                            'downloadlink'		=> false,
-                        )
-                    )),
+                    'action'	=> 'plugin_information'
                 ),
             ));
-
-            $response = unserialize($response['body']);
-            return isset($response->downloaded) ? $response->downloaded : array();
+            $response = json_decode($response['body']);
+            $yesterday = date('Y-m-d',strtotime("-1 days"));
+            return $response->$yesterday;
         }
 
         public static function org_daily_download_count($plugin_list = array()) {
             require_once(ABSPATH . 'wp-admin/includes/plugin-install.php');
 
-            //$plugin_info = plugins_api('plugin_information', array( 'slug' => 'wp-dark-mode' ));
             $downloaded =  get_option('total_downloaded');
             $download_count = get_option('enable_download_count');
             $count_report_hook = get_option('slack_support_settings');
-            //write_log('boro kore download');
-
 
             $plugin_list = array();
             $feed_list = get_option( 'theme_plugin_list');
             if ($count_report_hook['enable_download_count'] == 'on') {
-                //write_log('choto kore download');
                 foreach ($feed_list['plugin_theme_feed']['feed'] as $key => $value) {
                     $slug = basename($value['org_link']);
                     $plugin_list[$slug] = self::get_plugin_downloads($slug);
@@ -406,22 +381,14 @@
 
                 $new_seq = array();
                 $i = 0;
-
-                $subtracted = array_map(function ($x, $y) {
-                    return $x - $y;
-                }, $plugin_list, $downloaded);
-
-                $result     = array_combine(array_keys($plugin_list), $subtracted);
-                
-
-                foreach ($result as $single_key => $single_d) {
+                foreach ($plugin_list as $single_key => $single_d) {
                     
                     $plugin_info = plugins_api('plugin_information', array( 'slug' => $single_key ));
-                    $plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
+                    $plugin_name   = isset($plugin_info->name) ? html_entity_decode($plugin_info->name) : '';
                     $sec_array = array();
                     $sec_array['type'] = 'section';
                     $sec_array['text']['type'] = 'mrkdwn';
-                    $sec_array['text']['text'] = $plugin_name . ' todays download '.$single_d.'';
+                    $sec_array['text']['text'] = $plugin_name . ' yesterday\'s download '.$single_d.'';
                     $new_seq[] = $sec_array;
                     $i++;
                 }
@@ -478,7 +445,6 @@
                     foreach ($support_item as $key => $value) {
                         $matches = preg_match_all('/<[^>]*class="[^"]*\bresolved\b[^"]*"[^>]*>/i', $value['title'], $matches);
                         if (!$matches) {
-                            //write_log($plugin_name);
                             $sec_array = array();
                             $sec_array['type'] = 'section';
                             $sec_array['text']['type'] = 'mrkdwn';
@@ -489,7 +455,6 @@
                     }else{
                         $matches = preg_match_all('/<[^>]*class="[^"]*\bresolved\b[^"]*"[^>]*>/i', $support_item['title'], $matches);
                         if (!$matches) {
-                            //write_log($plugin_name);
                             $sec_array = array();
                             $sec_array['type'] = 'section';
                             $sec_array['text']['type'] = 'mrkdwn';

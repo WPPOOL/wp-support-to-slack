@@ -97,12 +97,8 @@
 
 
 			function admin_init() {
-
-
 				//register settings sections
-               // write_log($this->settings_sections);
 				foreach ($this->settings_sections as $section) {
-
 					if (false == get_option($section['id'])) {
 						$section_default_value = $this->getDefaultValueBySection($section['id']);
 						add_option($section['id'], $section_default_value);
@@ -156,12 +152,10 @@
 							'type'              => $type,
 							'optgroup'          => isset($option['optgroup']) ? intval($option['optgroup']) : 0
 						);
-
 						//add_settings_field($section . '[' . $option['name'] . ']', $option['label'], array($this, 'callback_' . $type), $section, $section, $args);
 						add_settings_field( "{$section}[{$name}]", $label, $callback, $section, $section, $args );
 					}
 				}
-
 				// creates our settings in the options table
 				foreach ($this->settings_sections as $section) {
 					register_setting($section['id'], $section['id'], array($this, 'sanitize_options'));
@@ -182,7 +176,6 @@
 				foreach ($fields as $field){
 					$default_values[$field['name']] =  isset($field['default'])? $field['default']: '';
 				}
-
 				return $default_values;
 			}
 
