@@ -103,6 +103,7 @@ final class WPSupportToSlack {
         }
 		
 		wp_clear_scheduled_hook('cron_save_org_downloads');
+		wp_clear_scheduled_hook('cron_seven_days_download_report');
     }
 
 	 /**

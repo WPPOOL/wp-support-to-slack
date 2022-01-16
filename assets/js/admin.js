@@ -126,23 +126,6 @@
 			var $form_table = $element.find('.form-table');
 			$form_table.prev('h2').remove();
 		});
-		/* console.log(support_to_slack_admin_setting.plugin_directory+'/templates/admin/sidebar.php');
-	  $(".view_php").click(function(){
-		  $(".sidebar_plugin").load(''+support_to_slack_admin_setting.plugin_directory+'/templates/admin/sidebar.php');
-	  }); */
-		/* $.ajax({
-			type: 'POST',
-			dataType: 'json',
-			url: support_to_slack_admin_setting.ajax_url, //we can use this value because in our php file we used wp_localize_script
-			data: {
-				action: 'fetch_wordpress_plugin',
-			},
-			success: function (response) {
-				//load the fetched php file into the div
-				console.log(response);
-				$('.sidebar_plugin').html(response.content);
-			}
-		}); */
 
 
 	});
@@ -165,8 +148,11 @@
 		}else{
 			$(this).parent('.switch').parent('.feed_item_label').siblings('.feed_item_field').children(".support_slack_webhook").fadeOut()();
 		}
-			
 	});
+	$('.dayexception_items').sortable({
+        revert: true
+    });
+
 
 
 })(jQuery);

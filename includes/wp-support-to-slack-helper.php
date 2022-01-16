@@ -107,6 +107,11 @@
             if ( $cron_settings['enable_download_count'] == 'on' && !empty( $cron_settings['download_webhook'] ) && !wp_next_scheduled('cron_save_org_downloads')) :
                 wp_schedule_event(time(), 'daily_count', 'cron_save_org_downloads'); // 1407110400 is 08 / 4 / 2014 @ 0:0:0 UTC
             endif;
+
+            if(!wp_next_scheduled('cron_seven_days_download_report')){
+                wp_schedule_event( time(), 'weekly_count', 'cron_seven_days_download_report');
+            }
+
         }
 
         /**
@@ -448,7 +453,7 @@
                             $sec_array = array();
                             $sec_array['type'] = 'section';
                             $sec_array['text']['type'] = 'mrkdwn';
-                            $sec_array['text']['text'] =  ++$key .'. '. strip_tags($value['title']) . '<' . $value['link'] . ''.' | Click here > ' .' ( From '. $plugin_name .' )'.'';
+                            $sec_array['text']['text'] =  ++$key .'. '. strip_tags($value['title']) . '<' . $value['link'] . ''.' | Click here > ' .' (From '. $plugin_name .')'.'';
                             $new_seq[] = $sec_array;
                         }
                     }
@@ -458,7 +463,7 @@
                             $sec_array = array();
                             $sec_array['type'] = 'section';
                             $sec_array['text']['type'] = 'mrkdwn';
-                            $sec_array['text']['text'] = strip_tags($support_item['title']) . '<' . $support_item['link'] . ''.' | Click here > ' .' ( From '. $plugin_name .' )'.'';
+                            $sec_array['text']['text'] = strip_tags($support_item['title']) . '<' . $support_item['link'] . ''.' | - Click here > ' .' (From '. $plugin_name .')'.'';
                             $new_seq[] = $sec_array;
                         }
                     }
@@ -544,4 +549,65 @@
             }
             return $rating; 
         }
+
+        /**
+         * Get the plugins last seven ddays download report from  wordpress org
+         *
+         * @return void
+         */
+        public static function last_seven_days_download_report(){
+            require_once(ABSPATH . 'wp-admin/includes/plugin-install.php');
+            $feed_list = get_option( 'theme_plugin_list');
+            $count_report_hook = get_option('slack_support_settings');
+            if (!empty($feed_list)) {
+                if ($count_report_hook['enable_download_count'] == 'on') {
+                $new_seq = array();
+                $i = 0;
+                foreach ($feed_list['plugin_theme_feed']['feed'] as $key => $value) {
+                    $slug = basename($value['org_link']);
+                    $plugin_info = plugins_api('plugin_information', array( 'slug' => $slug ));
+                    $plugin_name   = isset($plugin_info->name) ? html_entity_decode($plugin_info->name) : '';
+                    
+                    //write_log($value);
+                    $url 		= 'https://api.wordpress.org/stats/plugin/1.0/downloads.php?slug='.$slug.'/';
+            
+                    $response 	= wp_remote_post($url, array(
+                        'body'		=> array(
+                            'action'	=> 'plugin_information'
+                        ),
+                    ));
+                    $response_array = (array) json_decode($response['body']);
+                    $lastEl = array_slice($response_array, -7);
+                    $seven_days_d = array_sum($lastEl);
+
+                    $sec_array = array();
+                    $sec_array['type'] = 'section';
+                    $sec_array['text']['type'] = 'mrkdwn';
+                    $sec_array['text']['text'] = $plugin_name . ' last 7 day\'s download '.$seven_days_d.'';
+                    $new_seq[] = $sec_array;
+                    $i++;
+                }
+
+                if (!empty($new_seq)) {
+                    $message = array('payload' => json_encode(array(
+                    'text' => 'last seven day\'s plugin\'s download report',
+                    "blocks" =>
+                        $new_seq
+                    )));
+                    $args = array(
+                        'body'        => $message,
+                        'timeout'     => '5',
+                        'redirection' => '5',
+                        'httpversion' => '1.0',
+                        'blocking'    => true,
+                        'headers'     => array(),
+                        'cookies'     => array(),
+                    );
+                    $response = wp_remote_post($count_report_hook['download_webhook'], $args);
+                    // Use curl to send your message
+                }
+            }
+            }
+        }
+
     }//end class WP Support To Slack
