@@ -562,13 +562,21 @@
             if (!empty($feed_list)) {
                 if ($count_report_hook['enable_download_count'] == 'on') {
                 $new_seq = array();
+                $new_seq[] = array(
+                    'type' => 'section',
+                    'text' => array(
+                        'type'=> 'mrkdwn',
+                        'text' => 'Weekly Download Report'
+                    ),
+
+                );
+                
                 $i = 0;
                 foreach ($feed_list['plugin_theme_feed']['feed'] as $key => $value) {
                     $slug = basename($value['org_link']);
                     $plugin_info = plugins_api('plugin_information', array( 'slug' => $slug ));
                     $plugin_name   = isset($plugin_info->name) ? html_entity_decode($plugin_info->name) : '';
                     
-                    //write_log($value);
                     $url 		= 'https://api.wordpress.org/stats/plugin/1.0/downloads.php?slug='.$slug.'/';
             
                     $response 	= wp_remote_post($url, array(
@@ -578,12 +586,27 @@
                     ));
                     $response_array = (array) json_decode($response['body']);
                     $lastEl = array_slice($response_array, -7);
-                    $seven_days_d = array_sum($lastEl);
+                    $last_fourteen = array_slice($response_array, -14);
+                    $last_week_total = array_sum($lastEl);
+                    
+                    $to_string = implode(", ",$lastEl);
+                    $second_week = array_slice($last_fourteen, 0, 7);
+                    $last_second_week_total = array_sum($second_week);
+                    $exact_percentage = $last_week_total / $last_second_week_total * 100;
+
+                    //$up_down = $exact_percentage >= 100 ? ':arrow_up:':':arrow_down:';
+
+                    if($exact_percentage >= 100){
+                        $up_down = ':arrow_up:';
+                    }else{
+                        $exact_percentage = 100 - $exact_percentage;
+                        $up_down = ':arrow_down:';
+                    }
 
                     $sec_array = array();
                     $sec_array['type'] = 'section';
                     $sec_array['text']['type'] = 'mrkdwn';
-                    $sec_array['text']['text'] = $plugin_name . ' last 7 day\'s download '.$seven_days_d.'';
+                    $sec_array['text']['text'] = $plugin_name . ': '.$to_string.' ('.$up_down.'%'.round($exact_percentage, 2).' than last week)';
                     $new_seq[] = $sec_array;
                     $i++;
                 }
