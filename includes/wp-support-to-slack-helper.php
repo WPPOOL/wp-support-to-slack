@@ -385,6 +385,14 @@
                 }
 
                 $new_seq = array();
+                $new_seq[] = array(
+                    'type' => 'section',
+                    'text' => array(
+                        'type'=> 'mrkdwn',
+                        'text' => 'Daily Download Report'
+                    ),
+
+                );
                 $i = 0;
                 foreach ($plugin_list as $single_key => $single_d) {
                     
@@ -606,7 +614,7 @@
                     $sec_array = array();
                     $sec_array['type'] = 'section';
                     $sec_array['text']['type'] = 'mrkdwn';
-                    $sec_array['text']['text'] = $plugin_name . ': '.$to_string.' ('.$up_down.'%'.round($exact_percentage, 2).' than last week)';
+                    $sec_array['text']['text'] = $plugin_name . ': '.$to_string.' ('.$up_down.round($exact_percentage, 2).'%'.' than last week)';
                     $new_seq[] = $sec_array;
                     $i++;
                 }
