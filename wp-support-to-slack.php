@@ -128,7 +128,6 @@ final class WPSupportToSlack {
         public function support_slack_cron_update_schedules($schedules) {
 			$feed_list = get_option( 'theme_plugin_list');
             $cron_settings = get_option( 'slack_support_settings');
-            // write_log($cron_settings);
 
             if(!empty($cron_settings)){
                 if (!empty($cron_settings['interval_recurrence'])) {
@@ -157,7 +156,6 @@ final class WPSupportToSlack {
                             break;
                     }
                 }
-                //write_log($schedules);
                
                 $schedules['every_12'] = array('interval' => 60 * 60 * 12,  'display' => 'Daily');
                 $schedules['daily_count'] = array('interval' => 60 * 60 * 24,  'display' => 'Daily');

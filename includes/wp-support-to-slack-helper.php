@@ -39,10 +39,10 @@
                     if (!empty($interval) && !empty($recurrence) && !wp_next_scheduled('support_to_slack_event_'.$key.'')) {
                         $slug = basename($single_feed['org_link']);
                         $global_hook = get_option('slack_support_settings');
-                        $hook_type = $single_feed['global_hook'] == 'on' ? $single_feed['webhook'] : $global_hook['download_webhook'];
-                        
+                        $hook_type = !empty($single_feed['global_hook']) && $single_feed['global_hook'] == 'on' ? $single_feed['webhook'] : $global_hook['download_webhook'];                        
                         $plugin_info = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
                         $plugin_name   = isset($plugin_info->name) ? html_entity_decode($plugin_info->name) : '';
+
                         wp_schedule_event(time(), $recurrence, 'support_to_slack_event_'.$key.'', array(
                             'plugin_feed_url' => $slug,
                             'slack_webhook' => $hook_type,
@@ -68,32 +68,27 @@
          * @return void
          */
         public static function support_slack_cron_activate () {
-            // Dont't Run => Not in Schedule Cronjobs
-            //$args = get_current_user_id();
 			require_once( ABSPATH . 'wp-admin/includes/plugin-install.php' );
-    
+
             $feed_list = get_option( 'theme_plugin_list');
             $cron_settings = get_option( 'slack_support_settings');
-            
+            $global_hook = get_option('slack_support_settings');
             if(!empty($cron_settings['interval_recurrence']) && isset($feed_list['plugin_theme_feed']['feed'])){
                 $recurrence = $cron_settings['interval_recurrence']['recurrence'];
                 $interval = $cron_settings['interval_recurrence']['interval'];
                 foreach ($feed_list['plugin_theme_feed']['feed'] as $key => $single_feed) {
                     if (!empty($interval) && !empty($recurrence) && !wp_next_scheduled('support_to_slack_event_'.$key.'')) {
                         $slug = basename($single_feed['org_link']);
-
                         $global_hook = get_option('slack_support_settings');
-                        $hook_type = !empty( $single_feed['global_hook'] ) && $single_feed['global_hook'] == 'on' ? $global_hook['download_webhook'] : $single_feed['webhook'];
+                        $hook_type = !empty( $single_feed['global_hook'] ) && $single_feed['global_hook'] == 'on' ? $single_feed['webhook'] : $global_hook['download_webhook'];
                         $plugin_info = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
                         $plugin_name   = isset($plugin_info->name) ? ($plugin_info->name) : '';
-
                         wp_schedule_event(time(), $recurrence, 'support_to_slack_event_'.$key.'', array(
                             'plugin_feed_url' => $slug,
                             'slack_webhook' => $hook_type,
                             'plugin_name' => $plugin_name,
                             'custom_message' => $single_feed['message'],
                         ));
-
                         wp_schedule_event(time(), 'weekly_count', 'unresolved_support_interval_'.$key.'', array(
                             'plugin_feed_url' => $slug,
                             'slack_webhook' => $hook_type,
@@ -124,10 +119,8 @@
          * @return void
          */
         public static function support_to_slack_msg_request($plugin_feed_url, $hook_url, $plugin_name, $custom_message) {
-
             libxml_use_internal_errors(true);
             $plugin_feed = 'https://wordpress.org/support/plugin/'.$plugin_feed_url.'/feed';
-        
             $custom_message = !empty($custom_message) ? $custom_message : "new support ticket from " . $plugin_name;
             /**
              * Checking plugin feed and hook url is not empty
@@ -256,12 +249,8 @@
             
             $rating_notification = get_option('slack_support_settings');
             if (!empty($rating_notification['enable_rating'] == 'on') && !empty($plugin_feed_url)) {
+                
                 libxml_use_internal_errors(true);
-                /* if ($plugin_or_theme == 'theme') {
-                    $wp_review_feed = 'https://wordpress.org/support/theme/'.$plugin_feed_url.'/reviews/feed';
-                } elseif ($plugin_or_theme == 'plugin') {
-                    
-                } */
                 $wp_review_feed = 'https://wordpress.org/support/plugin/'.$plugin_feed_url.'/reviews/feed';
                 //$wp_review_feed = 'https://wordpress.org/support/plugin/'.$plugin_feed_url.'/reviews/feed';
                 $review_document = simplexml_load_file($wp_review_feed, "SimpleXMLElement", LIBXML_NOCDATA);
@@ -431,8 +420,6 @@
         public static function unresolved_support_fixed_int_request($plugin_feed_url, $hook_url, $plugin_name, $custom_message){
             libxml_use_internal_errors(true);
             $plugin_feed = 'https://wordpress.org/support/plugin/'.$plugin_feed_url.'/feed';
-        
-            //$hook_url = $plugin_info->slack_webhook;
             $custom_message = !empty($custom_message) ? $custom_message : "new support ticket from " . $plugin_name;
             /**
              * Checking plugin feed and hook url is not empty

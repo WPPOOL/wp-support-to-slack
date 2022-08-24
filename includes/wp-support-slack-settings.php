@@ -379,7 +379,6 @@
 				$value = $this->get_option($args['id'], $args['section'], $args['default']);
 				if(!is_array($value)) $value = array();
 				$size  = isset($args['size']) && !is_null($args['size']) ? $args['size'] : 'regular selecttwo-select';
-				//write_log($value);
 				$interval = isset($value['interval'])? $value['interval'] : '';
 				$html = sprintf('<select class="%1$s" name="%2$s[%3$s][recurrence]" id="%2$s[%3$s]">', $size, $args['section'], $args['id']);
 				foreach ($args['options'] as $key => $label) {
@@ -610,7 +609,6 @@
 									$slug = basename($exception['org_link']);
 									$plugin_info = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
 									$plugin_name   = isset($plugin_info->name) ? $plugin_info->name : '';
-									//write_log($exception);
 									if(isset($exception['global_hook']) && $exception['global_hook'] == "on"){
 										$checked = "checked";
 										$display = "";
@@ -861,7 +859,6 @@
 						<div id="<?php echo $form['id']; ?>" class="support_to_slack_group" style="display: none;">
 							<form method="post" action="options.php">
 								<?php
-                                //write_log($form);
 									do_action('support_to_slack_form_top_' . $form['id'], $form);
 									settings_fields($form['id']);
 									do_settings_sections($form['id']);
